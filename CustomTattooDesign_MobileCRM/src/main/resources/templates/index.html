@@ -1,34 +1,51 @@
 <!DOCTYPE html>
-<html>
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
-<meta charset="UTF-8">
-<title>Insert title here</title>
+	<meta charset="UTF-8">
+	<title>Custom Tattoo Design - Hello World!</title>
+	<link rel="stylesheet" type="text/css" 
+		href="../static/css/CustomTattooDesign.css" th:href="@{/css/CustomTattooDesign.css}"/>
 </head>
 <body>
-	<h1>Custom Tattoo Design - Mobile CRM</h1>
-	<h2>Tornado Hunters - Hello World</h2>
+	<header>
+		<h1>Custom Tattoo Design - Mobile CRM</h1>
+	</header>
+	
+	<div>
+		<h2>Custom Tattoo Design - Official Website</h2>
+		
+		<p>
+			Visit the official Custom Tattoo Design website at 
+			<a href="https://customtattoodesign.ca/home">https://customtattoodesign.ca/home</a>.
+		</p>
+	</div>
+	
+	<div>
+		<h2>Tornado Hunters - Hello World</h2>
+		
+		<table>
+			<tr>
+				<th>Thomas Chapman</th>
+				<td><a href="mailto:chapmath@sheridancollege.ca">chapmath@sheridancollege.ca</a></td>
+				<td>991538703</td>
+			</tr>
+			<tr>
+				<th>Fernando Fedele</th>
+				<td><a href="mailto:fedelef@sheridancollege.ca">fedelef@sheridancollege.ca</a></td>
+				<td>991529962</td>
+			</tr>
+			<tr>
+				<th>Roman Krutikov</th>
+				<td><a href="mailto:krutikov@sheridancollege.ca">krutikov@sheridancollege.ca</a></td>
+				<td>991545938</td>
+			</tr>
+			<tr>
+				<th>Andreea Popa</th>
+				<td><a href="mailto:popaan@sheridancollege.ca">popaan@sheridancollege.ca</a></td>
+				<td>991519111</td>
+			</tr>
+		</table>
+	</div>
 
-	<table>
-		<tr>
-			<th>Thomas Chapman</th>
-			<td>chapmath@sheridancollege.ca</td>
-			<td>991538703</td>
-		</tr>
-		<tr>
-			<th>Fernando Fedele</th>
-			<td>fedelef@sheridancollege.ca</td>
-			<td>991529962</td>
-		</tr>
-		<tr>
-			<th>Roman Krutikov</th>
-			<td>krutikov@sheridancollege.ca</td>
-			<td>991545938</td>
-		</tr>
-		<tr>
-			<th>Andreea Popa</th>
-			<td>popaan@sheridancollege.ca</td>
-			<td>991519111</td>
-		</tr>
-	</table>
 </body>
 </html>
