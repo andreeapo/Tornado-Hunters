@@ -19,6 +19,3 @@ th, td {
 th:hover, td:hover {
 	color: blue;
 }
-input:hover {
-	border: 2px solid blue;
-}
