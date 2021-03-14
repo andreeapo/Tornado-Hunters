@@ -1,0 +1,7 @@
+{
+  "name": "CustomTattoDesign_MobileApp",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular"
+}
