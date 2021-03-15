@@ -7,8 +7,9 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.web.server.ResponseStatusException;
 
-import ca.customtattoodesign.mobilecrm.services.LoginUserService;
+import ca.customtattoodesign.mobilecrm.beans.LoginUser;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
@@ -56,7 +57,7 @@ public class LoginUserServiceTest {
 	
 	@Test
 	public void testIsPasswordRegexCorrectRegular() {
-		String generatedString = "43baef7b86aea46a09bf3c67acd1a8e830e642f1cf33ee3081ebb1ba845d1838";
+		String generatedString = "tJ8ZY31n0nefxUaPKa0JOaRWetPU59sS8MZyvVqSMoMrLdE39C2WQDt1eZZGgqwN";
 		boolean isPasswordRegexCorrect = loginUserService.isPasswordRegexCorrect(generatedString);
 		assertTrue("Password SHA regex function failed...", isPasswordRegexCorrect == true);
 	}
@@ -115,6 +116,46 @@ public class LoginUserServiceTest {
 		String username = null;
 		boolean isUsernameNotNullOrEmpty = loginUserService.isUsernameNotNullOrEmpty(username);
 		assertFalse("Username not null or empty function failed ...", isUsernameNotNullOrEmpty == true);
+	}
+	
+	@Test
+	public void testIsValidLoginRegular() {
+		String username = System.getenv("capTestUser");
+		String password = System.getenv("capTestPassword");
+		
+		LoginUser user = LoginUser.builder().username(username).password(password).build();
+		boolean isValid = loginUserService.isValidLogin(user); 
+		assertTrue("User was not validated correctly...", isValid == true);
+	}
+	
+	@Test
+	public void testIsValidLoginBoundaryIn() {
+		String username = System.getenv("capTestUser2");
+		String password = System.getenv("capTestPassword2");
+		
+		LoginUser user = LoginUser.builder().username(username).password(password).build();
+		boolean isValid = loginUserService.isValidLogin(user); 
+		assertTrue("User was not validated correctly...", isValid == true);
+	}
+	
+	@Test(expected = ResponseStatusException.class)
+	public void testIsValidLoginBoundaryOut() {
+		String username = System.getenv("capTestUser");
+		String password = System.getenv("capTestPassword") + "0";
+		
+		LoginUser user = LoginUser.builder().username(username).password(password).build();
+		boolean isValid = loginUserService.isValidLogin(user); 
+		assertFalse("User was not validated correctly...", isValid == true);
+	}
+	
+	@Test(expected = ResponseStatusException.class)
+	public void testIsValidLoginException() {
+		String username = null;
+		String password = System.getenv("capTestPassword");
+		
+		LoginUser user = LoginUser.builder().username(username).password(password).build();
+		boolean isValid = loginUserService.isValidLogin(user); 
+		assertFalse("User was not validated correctly...", isValid == true);
 	}
 	
 }
