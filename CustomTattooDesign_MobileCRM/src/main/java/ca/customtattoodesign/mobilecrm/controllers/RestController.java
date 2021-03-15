@@ -1,11 +1,14 @@
 package ca.customtattoodesign.mobilecrm.controllers;
 
 import java.sql.SQLException;
-import java.util.regex.Pattern;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.lang.NonNull;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -13,14 +16,15 @@ import ca.customtattoodesign.mobilecrm.beans.LoginUser;
 import ca.customtattoodesign.mobilecrm.dao.TornadoHuntersDao;
 import ca.customtattoodesign.mobilecrm.services.LoginUserService;
 
-@RequestMapping("apiv1")
+@RequestMapping("api")
+@org.springframework.web.bind.annotation.RestController
 public class RestController {
 	
 	@Autowired
 	private LoginUserService loginUserService;
 
 	@PostMapping("/authenticateCredentials")
-	public boolean authenticateCredentials(LoginUser user) throws ResponseStatusException{
+	public boolean authenticateCredentials(@Validated @NonNull @RequestBody LoginUser user){
 		boolean isValidUser = false;
 		
 		String userPassword = user.getPassword();
@@ -52,6 +56,26 @@ public class RestController {
 		}
 		
 		return isValidUser;
+	}
+	
+	@GetMapping("/ping")
+	public String ping() {
+		return "Pong!";
+	}
+	
+	
+	@GetMapping("/testDB")
+	public String testDB() {
+		
+		try {
+			TornadoHuntersDao db = TornadoHuntersDao.getInstance();
+			return db.testQuery();
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		return "Something went wrong!";
 	}
 	
 }

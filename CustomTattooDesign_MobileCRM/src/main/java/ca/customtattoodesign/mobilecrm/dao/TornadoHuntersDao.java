@@ -62,27 +62,31 @@ public class TornadoHuntersDao {
 		return conn;
 	}
 	
-	public void testQuery() throws SQLException {
+	public String testQuery() throws SQLException {
 		
 		Connection conn = this.getConnection();
+		
+		String output = "";
+		
 		PreparedStatement prep = conn.prepareStatement("SELECT * FROM \"Test\"");
 		ResultSet results = prep.executeQuery();
 		
 		while (results.next()) {
-			System.out.println("Name = " + results.getString("name"));
+			output += "Name = " + results.getString("name") + "\n";
 		}
 		
 		if (conn != null) {
 			conn.close();
 		}
 		
+		return output;
 	}
 	
 	public boolean isUserAuthenticated(LoginUser user) throws SQLException {
 		boolean isUserAuthenticated = false;
 		
 		Connection conn = this.getConnection();
-		PreparedStatement prep = conn.prepareStatement("SELECT * FROM \"Login\" WHERE (USERNAME = ? AND PASSWORD = ?)");
+		PreparedStatement prep = conn.prepareStatement("SELECT * FROM \"users\" WHERE (id = ? AND encrypted_passwrod = ?)");
 		prep.setString(1, user.getUsername());
 		prep.setString(2, user.getPassword());
 		
