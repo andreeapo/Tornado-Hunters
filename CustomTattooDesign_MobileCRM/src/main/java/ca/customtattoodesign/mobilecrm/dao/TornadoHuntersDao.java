@@ -106,5 +106,18 @@ public class TornadoHuntersDao {
 		
 		return isUserAuthenticated;
 	}
+	
+	public boolean setUserSessionToken(LoginUser user, String sessionToken) throws SQLException {
+		Connection conn = this.getConnection();
+		PreparedStatement prep = conn.prepareStatement("UPDATE \"users\" SET \"session_token\" = ? WHERE (\"email\" = ? AND \"encrypted_password\" = ?)");
+		prep.setString(1, sessionToken);
+		prep.setString(2, user.getUsername());
+		prep.setString(3, user.getPassword());
+		
+		int rowsUpdated = prep.executeUpdate();
+		boolean wasSuccessful = rowsUpdated==1;
+		
+		return wasSuccessful;
+	}
 
 }

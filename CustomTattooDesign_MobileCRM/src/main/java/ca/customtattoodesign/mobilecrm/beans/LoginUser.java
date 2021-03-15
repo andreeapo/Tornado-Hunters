@@ -13,9 +13,11 @@ import lombok.NoArgsConstructor;
 public class LoginUser {
 	private String username;
 	private String password;
+	private boolean isPersistent;
 	
-	public LoginUser(@JsonProperty("username") String username, @JsonProperty("password") String password) {
+	public LoginUser(@JsonProperty("username") String username, @JsonProperty("password") String password, @JsonProperty("isPersistent") boolean isPersistant) {
 		this.username = username;
 		this.password = password;
+		this.isPersistent = isPersistant;
 	}
 }

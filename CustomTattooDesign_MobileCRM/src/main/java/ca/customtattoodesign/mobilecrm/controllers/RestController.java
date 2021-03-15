@@ -3,6 +3,7 @@ package ca.customtattoodesign.mobilecrm.controllers;
 import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.lang.NonNull;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.server.ResponseStatusException;
 
 import ca.customtattoodesign.mobilecrm.beans.LoginUser;
+import ca.customtattoodesign.mobilecrm.beans.SessionUser;
 import ca.customtattoodesign.mobilecrm.services.LoginUserService;
 
 @RequestMapping("api")
@@ -22,7 +24,7 @@ public class RestController {
 	private LoginUserService loginUserService;
 
 	@PostMapping("/authenticateCredentials")
-	public boolean authenticateCredentials(HttpServletResponse response, @Validated @NonNull @RequestBody LoginUser user) throws ResponseStatusException {
+	public SessionUser authenticateCredentials(HttpServletResponse response, @RequestBody @NonNull LoginUser user) throws ResponseStatusException {
 		response.addHeader("Access-Control-Allow-Origin", "*");
 		response.addHeader("Access-Control-Allow-Methods", "POST");
 		response.addHeader("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");

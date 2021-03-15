@@ -2,6 +2,8 @@ package ca.customtattoodesign.mobilecrm.services;
 
 import static org.junit.Assert.*;
 
+import java.security.NoSuchAlgorithmException;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +12,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.web.server.ResponseStatusException;
 
 import ca.customtattoodesign.mobilecrm.beans.LoginUser;
+import ca.customtattoodesign.mobilecrm.beans.SessionUser;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
@@ -124,8 +127,8 @@ public class LoginUserServiceTest {
 		String password = System.getenv("capTestPassword");
 		
 		LoginUser user = LoginUser.builder().username(username).password(password).build();
-		boolean isValid = loginUserService.isValidLogin(user); 
-		assertTrue("User was not validated correctly...", isValid == true);
+		SessionUser sessionUser = loginUserService.isValidLogin(user); 
+		assertTrue("User was not validated correctly...", sessionUser.isValidUser() == true);
 	}
 	
 	@Test
@@ -134,8 +137,8 @@ public class LoginUserServiceTest {
 		String password = System.getenv("capTestPassword2");
 		
 		LoginUser user = LoginUser.builder().username(username).password(password).build();
-		boolean isValid = loginUserService.isValidLogin(user); 
-		assertTrue("User was not validated correctly...", isValid == true);
+		SessionUser sessionUser = loginUserService.isValidLogin(user); 
+		assertTrue("User was not validated correctly...", sessionUser.isValidUser() == true);
 	}
 	
 	@Test(expected = ResponseStatusException.class)
@@ -144,8 +147,8 @@ public class LoginUserServiceTest {
 		String password = System.getenv("capTestPassword") + "0";
 		
 		LoginUser user = LoginUser.builder().username(username).password(password).build();
-		boolean isValid = loginUserService.isValidLogin(user); 
-		assertFalse("User was not validated correctly...", isValid == true);
+		SessionUser sessionUser = loginUserService.isValidLogin(user); 
+		assertFalse("User was not validated correctly...", sessionUser.isValidUser() == true);
 	}
 	
 	@Test(expected = ResponseStatusException.class)
@@ -154,8 +157,72 @@ public class LoginUserServiceTest {
 		String password = System.getenv("capTestPassword");
 		
 		LoginUser user = LoginUser.builder().username(username).password(password).build();
-		boolean isValid = loginUserService.isValidLogin(user); 
-		assertFalse("User was not validated correctly...", isValid == true);
+		SessionUser sessionUser = loginUserService.isValidLogin(user); 
+		assertFalse("User was not validated correctly...", sessionUser.isValidUser() == true);
+	}
+	
+	@Test
+	public void testGenerateSessionTokenRegular() {
+		String username = System.getenv("capTestUser");
+		String password = System.getenv("capTestPassword");
+		
+		LoginUser user = LoginUser.builder().username(username).password(password).isPersistent(true).build();
+		
+		String sessionId = "";
+		try {
+			sessionId = loginUserService.generateSessionToken(user); 
+		}
+		catch (NoSuchAlgorithmException e) {}
+		
+		assertTrue("User session was not generated correctly...", !sessionId.equals(""));
+	}
+	
+	@Test
+	public void testGenerateSessionTokenBoundaryIn() {
+		String username = System.getenv("capTestUser2");
+		String password = System.getenv("capTestPassword2");
+		
+		LoginUser user = LoginUser.builder().username(username).password(password).isPersistent(true).build();
+		
+		String sessionId = "";
+		try {
+			sessionId = loginUserService.generateSessionToken(user); 
+		}
+		catch (NoSuchAlgorithmException e) {}
+		
+		assertTrue("User session was not generated correctly...", !sessionId.equals(""));
+	}
+	
+	@Test
+	public void testGenerateSessionTokenBoundaryOut() {
+		String username = System.getenv("capTestUser2");
+		String password = System.getenv("capTestPassword2");
+		
+		LoginUser user = LoginUser.builder().username(username).password(password).isPersistent(false).build();
+		
+		String sessionId = "";
+		try {
+			sessionId = loginUserService.generateSessionToken(user); 
+		}
+		catch (NoSuchAlgorithmException e) {}
+		
+		assertFalse("User session was not generated correctly...", !sessionId.equals(""));
+	}
+	
+	@Test
+	public void testGenerateSessionTokenException() {
+		String username = null;
+		String password = System.getenv("capTestPassword2");
+		
+		LoginUser user = LoginUser.builder().username(username).password(password).isPersistent(true).build();
+		
+		String sessionId = "";
+		try {
+			sessionId = loginUserService.generateSessionToken(user); 
+		}
+		catch (NoSuchAlgorithmException e) {}
+		
+		assertFalse("User session was not generated correctly...", !sessionId.equals(""));
 	}
 	
 }
