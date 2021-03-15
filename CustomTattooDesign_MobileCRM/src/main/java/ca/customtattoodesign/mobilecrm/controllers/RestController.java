@@ -1,5 +1,7 @@
 package ca.customtattoodesign.mobilecrm.controllers;
 
+import javax.servlet.http.HttpServletResponse;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.NonNull;
 import org.springframework.validation.annotation.Validated;
@@ -20,12 +22,14 @@ public class RestController {
 	private LoginUserService loginUserService;
 
 	@PostMapping("/authenticateCredentials")
-	public boolean authenticateCredentials(@Validated @NonNull @RequestBody LoginUser user) throws ResponseStatusException {
+	public boolean authenticateCredentials(HttpServletResponse response, @Validated @NonNull @RequestBody LoginUser user) throws ResponseStatusException {
+		response.addHeader("Access-Control-Allow-Origin", "*");
 		return loginUserService.isValidLogin(user);
 	}
 	
 	@GetMapping("/ping")
-	public String ping() {
+	public String ping(HttpServletResponse response) {
+		response.addHeader("Access-Control-Allow-Origin", "*");
 		return "Pong!";
 	}
 	
