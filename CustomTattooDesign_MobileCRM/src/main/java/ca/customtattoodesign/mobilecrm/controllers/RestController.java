@@ -24,12 +24,14 @@ public class RestController {
 	@PostMapping("/authenticateCredentials")
 	public boolean authenticateCredentials(HttpServletResponse response, @Validated @NonNull @RequestBody LoginUser user) throws ResponseStatusException {
 		response.addHeader("Access-Control-Allow-Origin", "*");
+		response.addHeader("Access-Control-Allow-Methods", "POST");
 		return loginUserService.isValidLogin(user);
 	}
 	
 	@GetMapping("/ping")
 	public String ping(HttpServletResponse response) {
 		response.addHeader("Access-Control-Allow-Origin", "*");
+		response.addHeader("Access-Control-Allow-Methods", "GET");
 		return "Pong!";
 	}
 	
