@@ -16,12 +16,26 @@ import ca.customtattoodesign.mobilecrm.beans.LoginUser;
 import ca.customtattoodesign.mobilecrm.beans.SessionUser;
 import ca.customtattoodesign.mobilecrm.dao.TornadoHuntersDao;
 
+/**
+ * The {@code LoginUserService} class is used to verify login credentials, such as making the username
+ * 		and password hashes are valid formats, generating session tokens and more.
+ * 
+ * @author Roman Krutikov
+ *
+ */
 @Service
 public class LoginUserService {
 	
 	public static final int PASSWORD_LENGTH = 64;
 	public static final String PASSWORD_REGEX = String.format("[0-9a-zA-Z]{%d}", PASSWORD_LENGTH);
 	
+	/**
+	 * Determines whether the LoginUser user is a user that exists in the database, and generates a session token
+	 * 	 if the user exists and they requested for it. All this information is saved within the SessionUser object.
+	 * 
+	 * @param user the LoginUser that is being authenticated
+	 * @return a SessionUser object which will 
+	 */
 	public SessionUser isValidLogin(LoginUser user) {
 		boolean isValidUser = false;
 		String sessionToken = "";
@@ -83,18 +97,46 @@ public class LoginUserService {
 		return resultingUser;
 	}
 	
+	/**
+	 * Checks whether or not the String (password) is the correct length.
+	 * 
+	 * @param password is the String that is being checked
+	 * @return {@code true} if String (password) length is correct <br>
+			   {@code false} if String (password) length is incorrect
+	 */
 	public boolean isPasswordLengthCorrect(String password) {
 		return (password != null && password.length() == PASSWORD_LENGTH);
 	}
 	
+	/**
+	 * Checks whether or not the String (password) matches the required pattern of a password.
+	 * 
+	 * @param password is the String that is being checked
+	 * @return {@code true} if String (password) matches the required password pattern<br>
+			   {@code false} if String (password) does not match the required password pattern
+	 */
 	public boolean isPasswordRegexCorrect(String password) {
 		return (password != null && Pattern.matches(PASSWORD_REGEX, password));
 	}
 
+	/**
+	 * Checks whether or not the String (username) is empty or null.
+	 * 
+	 * @param username is the String that is being checked
+	 * @return {@code true} if String (username) is not null or empty <br>
+			   {@code false} if String (username) is null or empty
+	 */
 	public boolean isUsernameNotNullOrEmpty(String username) {
 		return (username != null && username.length() > 0);
 	}
 	
+	/**
+	 * Generates a unique session token for a LoginUser.
+	 * 
+	 * @param user is a LoginUser for whom the session token is being generated
+	 * @return a String session token
+	 * @throws NoSuchAlgorithmException if the algorithm specified for making the token is invalid
+	 */
 	public String generateSessionToken(LoginUser user) throws NoSuchAlgorithmException {
 		String sessionId = "";
 		
