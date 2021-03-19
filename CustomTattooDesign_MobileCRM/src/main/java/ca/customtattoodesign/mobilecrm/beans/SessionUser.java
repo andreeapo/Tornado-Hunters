@@ -16,7 +16,7 @@ import lombok.NoArgsConstructor;
 @Builder
 public class SessionUser {
 	
-	private boolean isValidUser;
+	private boolean validUser;
 	private String sessionToken;
 	
 }

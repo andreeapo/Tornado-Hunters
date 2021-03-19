@@ -41,7 +41,7 @@ public class RestController {
 		response.addHeader("Access-Control-Allow-Origin", "*");
 		response.addHeader("Access-Control-Allow-Methods", "POST");
 		response.addHeader("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-		return loginUserService.isValidLogin(user);
+		return loginUserService.getSessionUser(user);
 	}
 	
 	/**

@@ -31,7 +31,7 @@ class TornadoHuntersDaoTest {
 		
 		try {
 			dao = TornadoHuntersDao.getInstance();
-			isValid = dao.isUserAuthorized(user);
+			isValid = dao.isUserAuthorized(user.getUsername(), user.getPassword());
 		}
 		catch (SQLException | ClassNotFoundException e) {}
 		
@@ -49,7 +49,7 @@ class TornadoHuntersDaoTest {
 		
 		try {
 			dao = TornadoHuntersDao.getInstance();
-			isValid = dao.isUserAuthorized(user);
+			isValid = dao.isUserAuthorized(user.getUsername(), user.getPassword());
 		}
 		catch (SQLException | ClassNotFoundException e) {}
 		
@@ -67,7 +67,7 @@ class TornadoHuntersDaoTest {
 		
 		try {
 			dao = TornadoHuntersDao.getInstance();
-			isValid = dao.isUserAuthorized(user);
+			isValid = dao.isUserAuthorized(user.getUsername(), user.getPassword());
 		}
 		catch (SQLException | ClassNotFoundException e) {}
 		
@@ -85,7 +85,7 @@ class TornadoHuntersDaoTest {
 		
 		try {
 			dao = TornadoHuntersDao.getInstance();
-			isValid = dao.isUserAuthorized(user);
+			isValid = dao.isUserAuthorized(user.getUsername(), user.getPassword());
 		}
 		catch (SQLException | ClassNotFoundException e) {}
 		

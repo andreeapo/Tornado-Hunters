@@ -120,18 +120,19 @@ public class TornadoHuntersDao {
 	 * This method checks whether the user exists within the database of users and returns
 	 * 		the result of the operation.
 	 * 
-	 * @param user a LoginUser object which will have some of its parameters checked against the database
+	 * @param username a String that will be checked against usernames in the database
+	 * @param password a String that will be checked against passwords in the database
 	 * @return {@code true} if the user exists in the database <br>
 			   {@code false} if the user does not exist in the database
 	 * @throws SQLException if the connection to the database failed, or if the SQL command(s) within the method failed
 	 */
-	public boolean isUserAuthorized(LoginUser user) throws SQLException {
+	public boolean isUserAuthorized(String username, String password) throws SQLException {
 		boolean isUserAuthenticated = false;
 		
 		Connection conn = this.getConnection();
 		PreparedStatement prep = conn.prepareStatement("SELECT * FROM \"users\" WHERE (\"email\" = ? AND \"encrypted_password\" = ?)");
-		prep.setString(1, user.getUsername());
-		prep.setString(2, user.getPassword());
+		prep.setString(1, username);
+		prep.setString(2, password);
 		
 		ResultSet results = prep.executeQuery();
 		

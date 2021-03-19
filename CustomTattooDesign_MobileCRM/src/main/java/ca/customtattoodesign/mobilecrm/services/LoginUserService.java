@@ -34,21 +34,15 @@ public class LoginUserService {
 	 * 	 if the user exists and they requested for it. All this information is saved within the SessionUser object.
 	 * 
 	 * @param user the LoginUser that is being authenticated
-	 * @return a SessionUser object which will 
+	 * @return a SessionUser object which holds info on if the user has been authenticated and their session token
 	 */
-	public SessionUser isValidLogin(LoginUser user) {
-		boolean isValidUser = false;
+	public SessionUser getSessionUser(LoginUser user) {
+		boolean isValidUser = isValidLoginUser(user);
 		String sessionToken = "";
 		
-		String userPassword = user.getPassword();
-		boolean isPasswordSha256 = isPasswordLengthCorrect(userPassword) && isPasswordRegexCorrect(userPassword);
-		
-		String userName = user.getUsername();
-		boolean isUsernameValid = isUsernameNotNullOrEmpty(userName);
-		
-		if (isPasswordSha256 && isUsernameValid) {
+		if (isValidUser) {
 			try {
-				isValidUser = TornadoHuntersDao.getInstance().isUserAuthorized(user);
+				isValidUser = TornadoHuntersDao.getInstance().isUserAuthorized(user.getUsername(), user.getPassword());
 			}
 			catch (NullPointerException | NumberFormatException e) {
 				throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getLocalizedMessage());
@@ -79,7 +73,6 @@ public class LoginUserService {
 					}
 				}
 				catch (SQLException e) {
-					e.printStackTrace();
 					throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Database connection failed...");
 				}
 				catch (ClassNotFoundException e) {
@@ -92,9 +85,27 @@ public class LoginUserService {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid user parameters...");
 		}
 		
-		SessionUser resultingUser = SessionUser.builder().isValidUser(isValidUser).sessionToken(sessionToken).build();
+		SessionUser resultingUser = SessionUser.builder().validUser(isValidUser).sessionToken(sessionToken).build();
 		
 		return resultingUser;
+	}
+	
+	/**
+	 * Checks whether or not a LoginUser's fields are in the proper format, if
+	 * they are in a proper format that means this user could exist in the database.
+	 * 
+	 * @param user the LoginUser that is being authenticated
+	 * @return {@code true} if the LoginUser's fields could make a user in the database<br>
+	 *	       {@code false} if the LoginUser's fields would never appear in the database
+	 */
+	public boolean isValidLoginUser(LoginUser user) {
+		String userPassword = user.getPassword();
+		boolean isPasswordSha256 = isPasswordLengthCorrect(userPassword) && isPasswordRegexCorrect(userPassword);
+		
+		String userName = user.getUsername();
+		boolean isUsernameValid = isUsernameNotNullOrEmpty(userName);
+		
+		return isPasswordSha256 && isUsernameValid;
 	}
 	
 	/**
@@ -134,13 +145,14 @@ public class LoginUserService {
 	 * Generates a unique session token for a LoginUser.
 	 * 
 	 * @param user is a LoginUser for whom the session token is being generated
+	 * 
 	 * @return a String session token
 	 * @throws NoSuchAlgorithmException if the algorithm specified for making the token is invalid
 	 */
 	public String generateSessionToken(LoginUser user) throws NoSuchAlgorithmException {
 		String sessionId = "";
 		
-		if (user != null && isUsernameNotNullOrEmpty(user.getUsername()) && user.isPersistent()) {
+		if (isUsernameNotNullOrEmpty(user.getUsername()) && user.isPersistent()) {
 			String username = user.getUsername();
 			SecureRandom rand = new SecureRandom();
 			

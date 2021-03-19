@@ -18,7 +18,7 @@ import lombok.NoArgsConstructor;
 public class LoginUser {
 	private String username;
 	private String password;
-	private boolean isPersistent;
+	private boolean persistent;
 	
 	/**
 	 * Constructor that is used when constructing the object from a JSON object
@@ -33,9 +33,9 @@ public class LoginUser {
 	 *        Whether or not the user wants to stay logged after exiting the application they are using.
 	 * 
 	 */
-	public LoginUser(@JsonProperty("username") String username, @JsonProperty("password") String password, @JsonProperty("isPersistent") boolean isPersistant) {
+	public LoginUser(@JsonProperty("username") String username, @JsonProperty("password") String password, @JsonProperty("persistent") boolean persistent) {
 		this.username = username;
 		this.password = password;
-		this.isPersistent = isPersistant;
+		this.persistent = persistent;
 	}
 }
