@@ -25,7 +25,6 @@ import ca.customtattoodesign.mobilecrm.services.LoginService;
  */
 @RequestMapping("api")
 @org.springframework.web.bind.annotation.RestController
-@CrossOrigin(origins = "", allowedHeaders = "")
 public class RestController {
 	
 	private Logger LOGGER = LoggerFactory.getLogger(this.getClass());
@@ -44,12 +43,8 @@ public class RestController {
 	 * @throws ResponseStatusException gives details on which type of exception was thrown internally and why.
 	 */
 	@PostMapping("/authenticateCredentials")
-	public SessionUser authenticateCredentials(HttpServletRequest request, HttpServletResponse response, @RequestBody 
-			@NonNull LoginUser user) throws ResponseStatusException {
-		
-		response.addHeader("Access-Control-Allow-Origin", "*");
-		response.addHeader("Access-Control-Allow-Methods", "POST");
-		response.addHeader("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+	public SessionUser authenticateCredentials(HttpServletRequest request, @RequestBody @NonNull LoginUser user) 
+			throws ResponseStatusException {
 		
 		LOGGER.info("Caller Address: '{}', Api Call Made: '{}'", request.getRemoteHost(), request.getServletPath());
 		
@@ -63,12 +58,8 @@ public class RestController {
 	 * @return {@code Pong!}
 	 */
 	@GetMapping("/ping")
-	public String ping(HttpServletRequest request, HttpServletResponse response) {
-		
-		response.addHeader("Access-Control-Allow-Origin", "*");
-		response.addHeader("Access-Control-Allow-Methods", "GET");
-		response.addHeader("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-		
+	public String ping(HttpServletRequest request) {
+
 		LOGGER.info("Caller Address: '{}', Api Call Made: '{}'", request.getRemoteHost(), request.getServletPath());
 		
 		return "Pong!";

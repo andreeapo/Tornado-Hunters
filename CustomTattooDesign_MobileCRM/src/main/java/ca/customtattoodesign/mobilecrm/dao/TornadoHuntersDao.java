@@ -4,10 +4,12 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.Properties;
 
 import ca.customtattoodesign.mobilecrm.beans.LoginUser;
+import ca.customtattoodesign.mobilecrm.beans.SessionUser;
 
 /**
  * The {@code TornadoHuntersDao} class is a singleton data access class for 
@@ -117,10 +119,10 @@ public class TornadoHuntersDao {
 	 */
 	public boolean isUserAuthorized(String username, String password) throws SQLException {
 		boolean isUserAuthenticated = false;
+		String sql = "SELECT * FROM \"users\" WHERE (\"email\" = ? AND \"encrypted_password\" = ?)";
 		
 		try (Connection conn = TornadoHuntersDao.getConnection(); 
-				PreparedStatement prep = conn.prepareStatement("SELECT * FROM \"users\" "
-				+ "WHERE (\"email\" = ? AND \"encrypted_password\" = ?)")) {
+				PreparedStatement prep = conn.prepareStatement(sql)) {
 			
 			prep.setString(1, username);
 			prep.setString(2, password);
@@ -133,6 +135,48 @@ public class TornadoHuntersDao {
 		}
 		
 		return isUserAuthenticated;
+	}
+	
+	/**
+	 * Gets various fields from the database to complete a SessionUser object.
+	 *  
+	 * @param sessionUser the SessionUser object into which the fields from the database are loaded into
+	 * @param username a String that will be checked against usernames in the database
+	 * @param password a String that will be checked against passwords in the database
+	 * @return {@code true} if the user was found in the database and the fields were fetched successfully<br>
+			   {@code false} if the user was NOT found in the database or the fields from the database were not fetched
+	 * @throws SQLException if the connection to the database failed, or if the SQL command(s) within the method failed
+	 */
+	public boolean fetchSessionUserFields(SessionUser sessionUser, String username, String password) throws SQLException {
+		boolean updateSuccessful = false;
+		String sql = "SELECT * FROM users INNER JOIN user_profiles ON users.id = user_profiles.user_id "
+				+ "WHERE (email = ? AND encrypted_password = ?)";
+		
+		try (Connection conn = TornadoHuntersDao.getConnection(); 
+				PreparedStatement prep = conn.prepareStatement(sql)){
+			
+			prep.setString(1, username);
+			prep.setString(2, password);
+			
+			ResultSet results = prep.executeQuery();
+		    
+			if (results.next()) {
+				
+				sessionUser.setFirstName(results.getString("first_name"));
+				sessionUser.setLastName(results.getString("last_name"));
+				sessionUser.setPaypalEmail(results.getString("paypal_email"));
+				sessionUser.setRole(results.getString("role"));
+				
+				sessionUser.setOverrideJobLimit(results.getInt("override_job_limit"));
+				sessionUser.setMaxJobValue(results.getInt("max_job_value"));
+				
+				sessionUser.setAverageTimeToCompletion(results.getDouble("average_time_to_completion"));
+				sessionUser.setAverageTimeToIntroduction(results.getDouble("average_time_to_introduction"));
+				
+				updateSuccessful = true;
+			}
+		}
+		return updateSuccessful;
 	}
 	
 	/**

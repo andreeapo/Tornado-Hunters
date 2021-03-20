@@ -11,6 +11,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import ca.customtattoodesign.mobilecrm.beans.LoginUser;
+import ca.customtattoodesign.mobilecrm.beans.SessionUser;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
@@ -58,6 +59,54 @@ class TornadoHuntersDaoTest {
 		boolean isValid = TornadoHuntersDao.getInstance().isUserAuthorized(user.getUsername(), user.getPassword());
 	
 		assertFalse("User was not validated correctly...", isValid);
+	}
+	
+	@Test
+	public void testFetchSessionUserFieldsRegular() throws SQLException {
+		String username = System.getenv("capTestUser");
+		String password = System.getenv("capTestPassword");
+		
+		SessionUser sessionUser = new SessionUser();
+		boolean wasSuccessful = TornadoHuntersDao.getInstance().fetchSessionUserFields(sessionUser, username, password);
+		boolean fieldExists = sessionUser.getFirstName() != null && !"".equals(sessionUser.getFirstName());
+		
+		assertTrue("SessionUser fields were fetching failed...", wasSuccessful && fieldExists);
+	}
+	
+	@Test
+	public void testFetchSessionUserFieldsBoundaryIn() throws SQLException {
+		String username = System.getenv("capTestUser2");
+		String password = System.getenv("capTestPassword2");
+		
+		SessionUser sessionUser = new SessionUser();
+		boolean wasSuccessful = TornadoHuntersDao.getInstance().fetchSessionUserFields(sessionUser, username, password);
+		boolean fieldExists = sessionUser.getFirstName() != null && !"".equals(sessionUser.getFirstName());
+		
+		assertTrue("SessionUser fields were fetching failed...", wasSuccessful && fieldExists);
+	}
+	
+	@Test
+	public void testFetchSessionUserFieldsBoundaryOut() throws SQLException {
+		String username = System.getenv("capTestUser2");
+		String password = System.getenv("capTestPassword2")+"0";
+		
+		SessionUser sessionUser = new SessionUser();
+		boolean wasSuccessful = TornadoHuntersDao.getInstance().fetchSessionUserFields(sessionUser, username, password);
+		boolean fieldExists = sessionUser.getFirstName() != null && !"".equals(sessionUser.getFirstName());
+		
+		assertFalse("SessionUser fields were fetching failed...", wasSuccessful && fieldExists);
+	}
+	
+	@Test
+	public void testFetchSessionUserFieldsException() throws SQLException {
+		String username = System.getenv("capTestUser2");
+		String password = null;
+		
+		SessionUser sessionUser = new SessionUser();
+		boolean wasSuccessful = TornadoHuntersDao.getInstance().fetchSessionUserFields(sessionUser, username, password);
+		boolean fieldExists = sessionUser.getFirstName() != null && !"".equals(sessionUser.getFirstName());
+		
+		assertFalse("SessionUser fields were fetching failed...", wasSuccessful && fieldExists);
 	}
 	
 	@Test

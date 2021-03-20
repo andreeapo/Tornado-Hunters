@@ -19,4 +19,13 @@ public class SessionUser {
 	private boolean validUser;
 	private String sessionToken;
 	
+	private String firstName;
+	private String lastName;
+	private String role;
+	private String paypalEmail;
+	private int overrideJobLimit;
+	private int maxJobValue;
+	private double averageTimeToCompletion;
+	private double averageTimeToIntroduction;
+	
 }

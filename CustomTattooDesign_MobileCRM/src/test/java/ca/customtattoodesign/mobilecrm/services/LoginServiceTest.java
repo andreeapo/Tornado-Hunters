@@ -166,7 +166,7 @@ public class LoginServiceTest {
 		String username = System.getenv("capTestUser");
 		String password = System.getenv("capTestPassword");
 		
-		LoginUser user = LoginUser.builder().username(username).password(password).persistent(true).build();
+		LoginUser user = LoginUser.builder().username(username).password(password).build();
 		
 		SessionUser sessionUser = loginService.getSessionUser(user);
 		
@@ -179,7 +179,7 @@ public class LoginServiceTest {
 		String username = System.getenv("capTestUser2");
 		String password = System.getenv("capTestPassword2");
 		
-		LoginUser user = LoginUser.builder().username(username).password(password).persistent(true).build();
+		LoginUser user = LoginUser.builder().username(username).password(password).build();
 		
 		SessionUser sessionUser = loginService.getSessionUser(user); 
 
@@ -192,7 +192,7 @@ public class LoginServiceTest {
 		String username = System.getenv("capTestUser");
 		String password = System.getenv("capTestPassword") + "0";
 		
-		LoginUser user = LoginUser.builder().username(username).password(password).persistent(true).build();
+		LoginUser user = LoginUser.builder().username(username).password(password).build();
 		
 		SessionUser sessionUser = loginService.getSessionUser(user); 
 
@@ -205,7 +205,7 @@ public class LoginServiceTest {
 		String username = null;
 		String password = System.getenv("capTestPassword");
 		
-		LoginUser user = LoginUser.builder().username(username).password(password).persistent(true).build();
+		LoginUser user = LoginUser.builder().username(username).password(password).build();
 		
 		SessionUser sessionUser = loginService.getSessionUser(user); 
 
@@ -218,7 +218,7 @@ public class LoginServiceTest {
 		String username = System.getenv("capTestUser");
 		String password = System.getenv("capTestPassword");
 		
-		LoginUser user = LoginUser.builder().username(username).password(password).persistent(true).build();
+		LoginUser user = LoginUser.builder().username(username).password(password).build();
 		
 		String sessionId = loginService.generateSessionToken(user); 
 
@@ -227,10 +227,10 @@ public class LoginServiceTest {
 	
 	@Test
 	public void testGenerateSessionTokenBoundaryIn() throws NoSuchAlgorithmException {
-		String username = System.getenv("capTestUser2");
+		String username = "0";
 		String password = System.getenv("capTestPassword2");
 		
-		LoginUser user = LoginUser.builder().username(username).password(password).persistent(true).build();
+		LoginUser user = LoginUser.builder().username(username).password(password).build();
 		
 		String sessionId = loginService.generateSessionToken(user); 
 
@@ -239,10 +239,10 @@ public class LoginServiceTest {
 	
 	@Test
 	public void testGenerateSessionTokenBoundaryOut() throws NoSuchAlgorithmException {
-		String username = System.getenv("capTestUser2");
+		String username = "";
 		String password = System.getenv("capTestPassword2");
 		
-		LoginUser user = LoginUser.builder().username(username).password(password).persistent(false).build();
+		LoginUser user = LoginUser.builder().username(username).password(password).build();
 		
 		String sessionId = loginService.generateSessionToken(user); 
 
@@ -254,7 +254,7 @@ public class LoginServiceTest {
 		String username = null;
 		String password = System.getenv("capTestPassword2");
 		
-		LoginUser user = LoginUser.builder().username(username).password(password).persistent(true).build();
+		LoginUser user = LoginUser.builder().username(username).password(password).build();
 		
 		String sessionId = loginService.generateSessionToken(user); 
 

@@ -44,21 +44,23 @@ public class LoginService {
 		boolean isValidFormatUser = isValidLoginUser(user);
 		boolean isValidDBUser;
 		String sessionToken = "";
+		SessionUser sessionUser = new SessionUser();
 		
 		if (isValidFormatUser) {
 			try {
 				isValidDBUser = TornadoHuntersDao.getInstance().isUserAuthorized(user.getUsername(), user.getPassword());
+				sessionUser.setValidUser(isValidDBUser);
 			}
 			catch (IllegalArgumentException e) {
-				LOGGER.error(e.getStackTrace().toString());
+				LOGGER.error(e.getMessage());
 				throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getLocalizedMessage());
 			}
 			catch (SQLException e) {
-				LOGGER.error(e.getStackTrace().toString());
+				LOGGER.error(e.getMessage());
 				throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Database connection failed...");
 			}
 			catch (SecurityException e) {
-				LOGGER.error(e.getStackTrace().toString());
+				LOGGER.error(e.getMessage());
 				throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Cannot access user environment variables...");
 			}
 		}
@@ -69,26 +71,40 @@ public class LoginService {
 		
 		if (isValidDBUser) {
 			try {
-				sessionToken = generateSessionToken(user);
+				boolean wasSuccessful = TornadoHuntersDao.getInstance()
+						.fetchSessionUserFields(sessionUser, user.getUsername(), user.getPassword());
+				if (!wasSuccessful) {
+					throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Unable to get session user fields...");
+				}
+				
 			}
-			catch (NoSuchAlgorithmException e) {
-				LOGGER.error(e.getStackTrace().toString());
-				throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Internal hashing algorithm failed...");
+			catch (SQLException e) {
+				LOGGER.error(e.getMessage());
+				throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Getting user data from database failed...");
 			}
+
 			
 			try {
+				sessionToken = generateSessionToken(user);
 				boolean wasSuccessful = TornadoHuntersDao.getInstance().setUserSessionToken(user, sessionToken);
 				if (!wasSuccessful) {
 					throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Database saving session failed...");
 				}
+				else {
+					sessionUser.setSessionToken(sessionToken);
+				}
 			}
 			catch (SQLException e) {
-				LOGGER.error(e.getStackTrace().toString());
+				LOGGER.error(e.getMessage());
 				throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Database connection failed...");
+			}
+			catch (NoSuchAlgorithmException e) {
+				LOGGER.error(e.getMessage());
+				throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Internal hashing algorithm failed...");
 			}
 		}
 		
-		return SessionUser.builder().validUser(isValidDBUser).sessionToken(sessionToken).build();
+		return sessionUser;
 	}
 	
 	/**
@@ -153,7 +169,7 @@ public class LoginService {
 	public String generateSessionToken(LoginUser user) throws NoSuchAlgorithmException {
 		String sessionId = "";
 		
-		if (isUsernameNotNullOrEmpty(user.getUsername()) && user.isPersistent()) {
+		if (isUsernameNotNullOrEmpty(user.getUsername())) {
 			String username = user.getUsername();
 			SecureRandom rand = new SecureRandom();
 			
