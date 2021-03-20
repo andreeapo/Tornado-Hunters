@@ -222,7 +222,7 @@ public class LoginServiceTest {
 		
 		String sessionId = loginService.generateSessionToken(user); 
 
-		assertNotEquals("User session was not generated correctly...", sessionId, "");
+		assertNotEquals("User session was not generated correctly...", "", sessionId);
 	}
 	
 	@Test
@@ -234,7 +234,7 @@ public class LoginServiceTest {
 		
 		String sessionId = loginService.generateSessionToken(user); 
 
-		assertNotEquals("User session was not generated correctly...", sessionId, "");
+		assertNotEquals("User session was not generated correctly...", "", sessionId);
 	}
 	
 	@Test
@@ -246,7 +246,7 @@ public class LoginServiceTest {
 		
 		String sessionId = loginService.generateSessionToken(user); 
 
-		assertEquals("User session was not generated correctly...", sessionId, "");
+		assertEquals("User session was not generated correctly...", "", sessionId);
 	}
 	
 	@Test
@@ -258,7 +258,7 @@ public class LoginServiceTest {
 		
 		String sessionId = loginService.generateSessionToken(user); 
 
-		assertEquals("User session was not generated correctly...", sessionId, "");
+		assertEquals("User session was not generated correctly...", "", sessionId);
 	}
 	
 }
