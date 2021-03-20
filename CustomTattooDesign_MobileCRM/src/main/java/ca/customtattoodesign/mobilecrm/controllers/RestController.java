@@ -12,7 +12,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import ca.customtattoodesign.mobilecrm.beans.LoginUser;
 import ca.customtattoodesign.mobilecrm.beans.SessionUser;
-import ca.customtattoodesign.mobilecrm.services.LoginUserService;
+import ca.customtattoodesign.mobilecrm.services.LoginService;
 
 /**
  * The {@code RestController} class is used for handling RESTful API requests.
@@ -24,7 +24,7 @@ import ca.customtattoodesign.mobilecrm.services.LoginUserService;
 public class RestController {
 	
 	@Autowired
-	private LoginUserService loginUserService;
+	private LoginService loginUserService;
 
 	/**
 	 * Authenticates the credentials of the user and returns an object with info on whether or not the user is 

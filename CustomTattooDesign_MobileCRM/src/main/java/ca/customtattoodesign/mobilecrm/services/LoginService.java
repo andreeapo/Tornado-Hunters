@@ -24,7 +24,7 @@ import ca.customtattoodesign.mobilecrm.dao.TornadoHuntersDao;
  *
  */
 @Service
-public class LoginUserService {
+public class LoginService {
 	
 	public static final int PASSWORD_LENGTH = 64;
 	public static final String PASSWORD_REGEX = String.format("[0-9a-zA-Z]{%d}", PASSWORD_LENGTH);

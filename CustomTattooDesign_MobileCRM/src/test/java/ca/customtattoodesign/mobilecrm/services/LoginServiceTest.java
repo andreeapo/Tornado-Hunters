@@ -16,109 +16,109 @@ import ca.customtattoodesign.mobilecrm.beans.SessionUser;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
-public class LoginUserServiceTest {
+public class LoginServiceTest {
 
 	@Autowired
-	private LoginUserService loginUserService;
+	private LoginService loginService;
 	
 	@Test
 	public void testIsPasswordLengthCorrectRegular() {
 		String generatedString = "";
-		for (int i = 0; i < LoginUserService.PASSWORD_LENGTH; i++) {
+		for (int i = 0; i < LoginService.PASSWORD_LENGTH; i++) {
 			generatedString += "a";
 		}
-		boolean isPasswordLengthCorrect = loginUserService.isPasswordLengthCorrect(generatedString);
-		assertTrue("Password length function failed...", isPasswordLengthCorrect == true);
+		boolean isPasswordLengthCorrect = loginService.isPasswordLengthCorrect(generatedString);
+		assertTrue("Password length function failed...", isPasswordLengthCorrect);
 	}
 	
 	@Test
 	public void testIsPasswordLengthCorrectBoundaryIn() {
 		String generatedString = "";
-		for (int i = 0; i < LoginUserService.PASSWORD_LENGTH; i++) {
+		for (int i = 0; i < LoginService.PASSWORD_LENGTH; i++) {
 			generatedString += "b";
 		}
-		boolean isPasswordLengthCorrect = loginUserService.isPasswordLengthCorrect(generatedString);
-		assertTrue("Password length function failed...", isPasswordLengthCorrect == true);
+		boolean isPasswordLengthCorrect = loginService.isPasswordLengthCorrect(generatedString);
+		assertTrue("Password length function failed...", isPasswordLengthCorrect);
 	}
 	
 	@Test
 	public void testIsPasswordLengthCorrectBoundaryOut() {
 		String generatedString = "";
-		for (int i = 0; i < LoginUserService.PASSWORD_LENGTH + 1; i++) {
+		for (int i = 0; i < LoginService.PASSWORD_LENGTH + 1; i++) {
 			generatedString += "b";
 		}
-		boolean isPasswordLengthCorrect = loginUserService.isPasswordLengthCorrect(generatedString);
-		assertFalse("Password length function failed...", isPasswordLengthCorrect == true);
+		boolean isPasswordLengthCorrect = loginService.isPasswordLengthCorrect(generatedString);
+		assertFalse("Password length function failed...", isPasswordLengthCorrect);
 	}
 	
 	@Test
 	public void testIsPasswordLengthCorrectException() {
 		String generatedString = null;
-		boolean isPasswordLengthCorrect = loginUserService.isPasswordLengthCorrect(generatedString);
-		assertFalse("Password length function failed...", isPasswordLengthCorrect == true);
+		boolean isPasswordLengthCorrect = loginService.isPasswordLengthCorrect(generatedString);
+		assertFalse("Password length function failed...", isPasswordLengthCorrect);
 	}
 	
 	@Test
 	public void testIsPasswordRegexCorrectRegular() {
-		String generatedString = "tJ8ZY31n0nefxUaPKa0JOaRWetPU59sS8MZyvVqSMoMrLdE39C2WQDt1eZZGgqwN";
-		boolean isPasswordRegexCorrect = loginUserService.isPasswordRegexCorrect(generatedString);
-		assertTrue("Password SHA regex function failed...", isPasswordRegexCorrect == true);
+		String generatedString = System.getenv("capTestPassword");
+		boolean isPasswordRegexCorrect = loginService.isPasswordRegexCorrect(generatedString);
+		assertTrue("Password SHA regex function failed...", isPasswordRegexCorrect);
 	}
 	
 	@Test
 	public void testIsPasswordRegexCorrectBoundaryIn() {
 		String generatedString = "";
-		for (int i = 0; i < LoginUserService.PASSWORD_LENGTH; i++) {
+		for (int i = 0; i < LoginService.PASSWORD_LENGTH; i++) {
 			generatedString += "b";
 		}
-		boolean isPasswordRegexCorrect = loginUserService.isPasswordRegexCorrect(generatedString);
-		assertTrue("Password SHA regex function failed...", isPasswordRegexCorrect == true);
+		boolean isPasswordRegexCorrect = loginService.isPasswordRegexCorrect(generatedString);
+		assertTrue("Password SHA regex function failed...", isPasswordRegexCorrect);
 	}
 	
 	@Test
 	public void testIsPasswordRegexCorrectBoundaryOut() {
 		String generatedString = "";
-		for (int i = 0; i < LoginUserService.PASSWORD_LENGTH-1; i++) {
+		for (int i = 0; i < LoginService.PASSWORD_LENGTH-1; i++) {
 			generatedString += "b";
 		}
 		generatedString += "+";
-		boolean isPasswordRegexCorrect = loginUserService.isPasswordRegexCorrect(generatedString);
-		assertFalse("Password SHA regex function failed...", isPasswordRegexCorrect == true);
+		boolean isPasswordRegexCorrect = loginService.isPasswordRegexCorrect(generatedString);
+		assertFalse("Password SHA regex function failed...", isPasswordRegexCorrect);
 	}
 	
 	@Test
 	public void testIsPasswordRegexCorrectException() {
 		String generatedString = null;
-		boolean isPasswordRegexCorrect = loginUserService.isPasswordRegexCorrect(generatedString);
-		assertFalse("Password SHA regex function failed...", isPasswordRegexCorrect == true);
+		boolean isPasswordRegexCorrect = loginService.isPasswordRegexCorrect(generatedString);
+		assertFalse("Password SHA regex function failed...", isPasswordRegexCorrect);
 	}
 	
 	@Test
 	public void testIsUsernameNotNullOrEmptyRegular() {
 		String username = "Billy";
-		boolean isUsernameNotNullOrEmpty = loginUserService.isUsernameNotNullOrEmpty(username);
-		assertTrue("Username not null or empty function failed ...", isUsernameNotNullOrEmpty == true);
+		boolean isUsernameNotNullOrEmpty = loginService.isUsernameNotNullOrEmpty(username);
+		assertTrue("Username not null or empty function failed ...", isUsernameNotNullOrEmpty);
 	}
 	
 	@Test
 	public void testIsUsernameNotNullOrEmptyBoundaryIn() {
 		String username = "B";
-		boolean isUsernameNotNullOrEmpty = loginUserService.isUsernameNotNullOrEmpty(username);
-		assertTrue("Username not null or empty function failed ...", isUsernameNotNullOrEmpty == true);
+		boolean isUsernameNotNullOrEmpty = loginService.isUsernameNotNullOrEmpty(username);
+		assertTrue("Username not null or empty function failed ...", isUsernameNotNullOrEmpty);
 	}
 	
 	@Test
 	public void testIsUsernameNotNullOrEmptyBoundaryOut() {
 		String username = "";
-		boolean isUsernameNotNullOrEmpty = loginUserService.isUsernameNotNullOrEmpty(username);
-		assertFalse("Username not null or empty function failed ...", isUsernameNotNullOrEmpty == true);
+		boolean isUsernameNotNullOrEmpty = loginService.isUsernameNotNullOrEmpty(username);
+		assertFalse("Username not null or empty function failed ...", isUsernameNotNullOrEmpty);
 	}
 	
 	@Test
 	public void testIsUsernameNotNullOrEmptyException() {
 		String username = null;
-		boolean isUsernameNotNullOrEmpty = loginUserService.isUsernameNotNullOrEmpty(username);
-		assertFalse("Username not null or empty function failed ...", isUsernameNotNullOrEmpty == true);
+		boolean isUsernameNotNullOrEmpty = loginService.isUsernameNotNullOrEmpty(username);
+		assertFalse("Username not null or empty function failed ...", isUsernameNotNullOrEmpty);
 	}
 	
 	@Test
@@ -127,8 +127,8 @@ public class LoginUserServiceTest {
 		String password = System.getenv("capTestPassword");
 		
 		LoginUser user = LoginUser.builder().username(username).password(password).build();
-		boolean isValidUser = loginUserService.isValidLoginUser(user); 
-		assertTrue("User was not validated correctly locally...", isValidUser == true);
+		boolean isValidUser = loginService.isValidLoginUser(user); 
+		assertTrue("User was not validated correctly locally...", isValidUser);
 	}
 	
 	@Test
@@ -137,8 +137,8 @@ public class LoginUserServiceTest {
 		String password = System.getenv("capTestPassword2");
 		
 		LoginUser user = LoginUser.builder().username(username).password(password).build();
-		boolean isValidUser = loginUserService.isValidLoginUser(user); 
-		assertTrue("User was not validated correctly locally...", isValidUser == true);
+		boolean isValidUser = loginService.isValidLoginUser(user); 
+		assertTrue("User was not validated correctly locally...", isValidUser);
 	}
 	
 	@Test
@@ -147,8 +147,8 @@ public class LoginUserServiceTest {
 		String password = System.getenv("capTestPassword") + "0";
 		
 		LoginUser user = LoginUser.builder().username(username).password(password).build();
-		boolean isValidUser = loginUserService.isValidLoginUser(user); 
-		assertFalse("User was not validated correctly locally...", isValidUser == true);
+		boolean isValidUser = loginService.isValidLoginUser(user); 
+		assertFalse("User was not validated correctly locally...", isValidUser);
 	}
 	
 	@Test
@@ -157,8 +157,8 @@ public class LoginUserServiceTest {
 		String password = System.getenv("capTestPassword");
 		
 		LoginUser user = LoginUser.builder().username(username).password(password).build();
-		boolean isValidUser = loginUserService.isValidLoginUser(user); 
-		assertFalse("User was not validated correctly...", isValidUser == true);
+		boolean isValidUser = loginService.isValidLoginUser(user); 
+		assertFalse("User was not validated correctly...", isValidUser);
 	}
 	
 	@Test
@@ -168,11 +168,10 @@ public class LoginUserServiceTest {
 		
 		LoginUser user = LoginUser.builder().username(username).password(password).persistent(true).build();
 		
-		SessionUser sessionUser = null;
-		sessionUser = loginUserService.getSessionUser(user); 
-
+		SessionUser sessionUser = loginService.getSessionUser(user);
+		
 		assertTrue("User session was not generated correctly...", sessionUser != null 
-				&& sessionUser.isValidUser() == true && !sessionUser.getSessionToken().equals(""));
+				&& sessionUser.isValidUser() && !sessionUser.getSessionToken().equals(""));
 	}
 	
 	@Test
@@ -182,8 +181,7 @@ public class LoginUserServiceTest {
 		
 		LoginUser user = LoginUser.builder().username(username).password(password).persistent(true).build();
 		
-		SessionUser sessionUser = null;
-		sessionUser = loginUserService.getSessionUser(user); 
+		SessionUser sessionUser = loginService.getSessionUser(user); 
 
 		assertTrue("User session was not generated correctly...", sessionUser != null 
 				&& sessionUser.isValidUser() == true && !sessionUser.getSessionToken().equals(""));
@@ -196,11 +194,10 @@ public class LoginUserServiceTest {
 		
 		LoginUser user = LoginUser.builder().username(username).password(password).persistent(true).build();
 		
-		SessionUser sessionUser = null;
-		sessionUser = loginUserService.getSessionUser(user); 
+		SessionUser sessionUser = loginService.getSessionUser(user); 
 
 		assertFalse("User session was not generated correctly...", sessionUser != null 
-				&& sessionUser.isValidUser() == true && !sessionUser.getSessionToken().equals(""));
+				&& sessionUser.isValidUser() && !sessionUser.getSessionToken().equals(""));
 	}
 	
 	@Test(expected = ResponseStatusException.class)
@@ -210,74 +207,57 @@ public class LoginUserServiceTest {
 		
 		LoginUser user = LoginUser.builder().username(username).password(password).persistent(true).build();
 		
-		SessionUser sessionUser = null;
-		sessionUser = loginUserService.getSessionUser(user); 
+		SessionUser sessionUser = loginService.getSessionUser(user); 
 
 		assertFalse("User session was not generated correctly...", sessionUser != null 
-				&& sessionUser.isValidUser() == true && !sessionUser.getSessionToken().equals(""));
+				&& sessionUser.isValidUser() && !sessionUser.getSessionToken().equals(""));
 	}
 	
 	@Test
-	public void testGenerateSessionTokenRegular() {
+	public void testGenerateSessionTokenRegular() throws NoSuchAlgorithmException {
 		String username = System.getenv("capTestUser");
 		String password = System.getenv("capTestPassword");
 		
 		LoginUser user = LoginUser.builder().username(username).password(password).persistent(true).build();
 		
-		String sessionId = "";
-		try {
-			sessionId = loginUserService.generateSessionToken(user); 
-		}
-		catch (NoSuchAlgorithmException e) {}
-		
+		String sessionId = loginService.generateSessionToken(user); 
+
 		assertTrue("User session was not generated correctly...", !sessionId.equals(""));
 	}
 	
 	@Test
-	public void testGenerateSessionTokenBoundaryIn() {
+	public void testGenerateSessionTokenBoundaryIn() throws NoSuchAlgorithmException {
 		String username = System.getenv("capTestUser2");
 		String password = System.getenv("capTestPassword2");
 		
 		LoginUser user = LoginUser.builder().username(username).password(password).persistent(true).build();
 		
-		String sessionId = "";
-		try {
-			sessionId = loginUserService.generateSessionToken(user); 
-		}
-		catch (NoSuchAlgorithmException e) {}
-		
+		String sessionId = loginService.generateSessionToken(user); 
+
 		assertTrue("User session was not generated correctly...", !sessionId.equals(""));
 	}
 	
 	@Test
-	public void testGenerateSessionTokenBoundaryOut() {
+	public void testGenerateSessionTokenBoundaryOut() throws NoSuchAlgorithmException {
 		String username = System.getenv("capTestUser2");
 		String password = System.getenv("capTestPassword2");
 		
 		LoginUser user = LoginUser.builder().username(username).password(password).persistent(false).build();
 		
-		String sessionId = "";
-		try {
-			sessionId = loginUserService.generateSessionToken(user); 
-		}
-		catch (NoSuchAlgorithmException e) {}
-		
+		String sessionId = loginService.generateSessionToken(user); 
+
 		assertFalse("User session was not generated correctly...", !sessionId.equals(""));
 	}
 	
 	@Test
-	public void testGenerateSessionTokenException() {
+	public void testGenerateSessionTokenException() throws NoSuchAlgorithmException {
 		String username = null;
 		String password = System.getenv("capTestPassword2");
 		
 		LoginUser user = LoginUser.builder().username(username).password(password).persistent(true).build();
 		
-		String sessionId = "";
-		try {
-			sessionId = loginUserService.generateSessionToken(user); 
-		}
-		catch (NoSuchAlgorithmException e) {}
-		
+		String sessionId = loginService.generateSessionToken(user); 
+
 		assertFalse("User session was not generated correctly...", !sessionId.equals(""));
 	}
 	
