@@ -25,6 +25,7 @@ import ca.customtattoodesign.mobilecrm.services.LoginService;
  */
 @RequestMapping("api")
 @org.springframework.web.bind.annotation.RestController
+@CrossOrigin(origins = "", allowedHeaders = "")
 public class RestController {
 	
 	private Logger LOGGER = LoggerFactory.getLogger(this.getClass());
