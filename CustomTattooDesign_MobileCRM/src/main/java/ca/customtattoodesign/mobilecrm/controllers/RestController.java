@@ -32,7 +32,8 @@ public class RestController {
 	 * 
 	 * @param response handles adding special headers to the HTTP response object
 	 * @param user is a LoginUser that is attempting to authenticate their login credentials
-	 * @return {@code SessionUser} object which contains info on whether or not the user is valid and/or their session token
+	 * @return {@code SessionUser} object which contains info on whether or not the user is valid 
+	 * 		and/or their session token
 	 * @throws ResponseStatusException gives details on which type of exception was thrown internally and why.
 	 */
 	@PostMapping("/authenticateCredentials")

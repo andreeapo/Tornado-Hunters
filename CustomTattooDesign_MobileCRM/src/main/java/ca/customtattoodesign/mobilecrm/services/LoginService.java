@@ -38,56 +38,47 @@ public class LoginService {
 	 */
 	public SessionUser getSessionUser(LoginUser user) {
 		boolean isValidUser = isValidLoginUser(user);
+		boolean isValidDBUser;
 		String sessionToken = "";
 		
 		if (isValidUser) {
 			try {
-				isValidUser = TornadoHuntersDao.getInstance().isUserAuthorized(user.getUsername(), user.getPassword());
+				isValidDBUser = TornadoHuntersDao.getInstance().isUserAuthorized(user.getUsername(), user.getPassword());
 			}
-			catch (NullPointerException | NumberFormatException e) {
+			catch (IllegalArgumentException e) {
 				throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getLocalizedMessage());
 			}
 			catch (SQLException e) {
-				e.printStackTrace();
 				throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Database connection failed...");
 			}
 			catch (SecurityException e) {
 				throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Cannot access user environment variables...");
 			}
-			catch (ClassNotFoundException e) {
-				throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Database driver failed...");
-			}
-			
-			if (isValidUser) {
-				try {
-					sessionToken = generateSessionToken(user);
-				}
-				catch (NoSuchAlgorithmException e) {
-					throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Internal hashing algorithm failed...");
-				}
-				
-				try {
-					boolean wasSuccessful = TornadoHuntersDao.getInstance().setUserSessionToken(user, sessionToken);
-					if (!wasSuccessful) {
-						throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Database saving session failed...");
-					}
-				}
-				catch (SQLException e) {
-					throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Database connection failed...");
-				}
-				catch (ClassNotFoundException e) {
-					throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Database driver failed...");
-				}
-			}
-
 		}
 		else {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid user parameters...");
 		}
 		
-		SessionUser resultingUser = SessionUser.builder().validUser(isValidUser).sessionToken(sessionToken).build();
+		if (isValidDBUser) {
+			try {
+				sessionToken = generateSessionToken(user);
+			}
+			catch (NoSuchAlgorithmException e) {
+				throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Internal hashing algorithm failed...");
+			}
+			
+			try {
+				boolean wasSuccessful = TornadoHuntersDao.getInstance().setUserSessionToken(user, sessionToken);
+				if (!wasSuccessful) {
+					throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Database saving session failed...");
+				}
+			}
+			catch (SQLException e) {
+				throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Database connection failed...");
+			}
+		}
 		
-		return resultingUser;
+		return SessionUser.builder().validUser(isValidUser).sessionToken(sessionToken).build();
 	}
 	
 	/**

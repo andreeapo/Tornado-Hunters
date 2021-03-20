@@ -29,7 +29,7 @@ public class TornadoHuntersDao {
 	
 	private static String URL = "";
 	
-	private static TornadoHuntersDao daoObject = null;
+	private static TornadoHuntersDao daoObject;
 	
 	/**
 	 * For returning an instance of the database access object.
@@ -42,8 +42,7 @@ public class TornadoHuntersDao {
 	 * @throws NumberFormatException when certain environment variables that should be integers are
 	 * 		set as non-integer values
 	 */
-	public static TornadoHuntersDao getInstance() throws ClassNotFoundException, 
-			NullPointerException, SecurityException, NumberFormatException{
+	public static TornadoHuntersDao getInstance() throws IllegalArgumentException, SecurityException {
 		if (daoObject == null) {
 			daoObject = new TornadoHuntersDao();
 			
@@ -54,22 +53,22 @@ public class TornadoHuntersDao {
 			String envPort = System.getenv("capDBport");
 			
 			if (envUser == null) {
-				throw new NullPointerException("Database 'username' not set in user environment variables...");
+				throw new IllegalArgumentException("Database 'username' not set in user environment variables...");
 			}
 			if (envPassword == null) {
-				throw new NullPointerException("Database 'password' not set in user environment variables...");
+				throw new IllegalArgumentException("Database 'password' not set in user environment variables...");
 			}
 			if (envHost == null) {
-				throw new NullPointerException("Database 'host' not set in user environment variables...");
+				throw new IllegalArgumentException("Database 'host' not set in user environment variables...");
 			}
 			if (envDatabase == null) {
-				throw new NullPointerException("Database 'database' not set in user environment variables...");
+				throw new IllegalArgumentException("Database 'database' not set in user environment variables...");
+			}
+			if (envPort == null) {
+				throw new IllegalArgumentException("Database 'port' not set in user environment variables...");
 			}
 			
 			int possiblePort = -1;
-			if (envPort == null) {
-				throw new NullPointerException("Database 'port' not set in user environment variables...");
-			}
 			try {
 				possiblePort = Integer.parseInt(envPort);
 			}
@@ -90,16 +89,7 @@ public class TornadoHuntersDao {
 		}
 		return daoObject;
 	}
-	
-	/**
-	 * Sets the database driver.
-	 * 
-	 * @throws ClassNotFoundException when the database driver is not found
-	 */
-	private TornadoHuntersDao() throws ClassNotFoundException {
-		Class.forName("org.postgresql.Driver");
-	}
-	
+
 	/**
 	 * For generating a Connection object which can be used for database commands. The connection
 	 * 		object should be closed after use to avoid errors!
@@ -107,13 +97,12 @@ public class TornadoHuntersDao {
 	 * @return a Connection object which can be used for database commands
 	 * @throws SQLException if the connection to the database failed
 	 */
-	private Connection getConnection() throws SQLException {
+	private static Connection getConnection() throws SQLException {
 		Properties properties = new Properties();
 		properties.setProperty("user", user);
 		properties.setProperty("password", password);
 		properties.setProperty("ssl", "false");
-		Connection conn = DriverManager.getConnection(URL, properties);
-		return conn;
+		return DriverManager.getConnection(URL, properties);
 	}
 	
 	/**
@@ -129,19 +118,18 @@ public class TornadoHuntersDao {
 	public boolean isUserAuthorized(String username, String password) throws SQLException {
 		boolean isUserAuthenticated = false;
 		
-		Connection conn = this.getConnection();
-		PreparedStatement prep = conn.prepareStatement("SELECT * FROM \"users\" WHERE (\"email\" = ? AND \"encrypted_password\" = ?)");
-		prep.setString(1, username);
-		prep.setString(2, password);
-		
-		ResultSet results = prep.executeQuery();
-		
-		if (results.next()) {
-			isUserAuthenticated = true;
-		}
-		
-		if (conn != null) {
-			conn.close();
+		try (Connection conn = this.getConnection(); 
+				PreparedStatement prep = conn.prepareStatement("SELECT * FROM \"users\" "
+				+ "WHERE (\"email\" = ? AND \"encrypted_password\" = ?)")) {
+			
+			prep.setString(1, username);
+			prep.setString(2, password);
+			
+			ResultSet results = prep.executeQuery();
+			
+			if (results.next()) {
+				isUserAuthenticated = true;
+			}		
 		}
 		
 		return isUserAuthenticated;
@@ -157,14 +145,19 @@ public class TornadoHuntersDao {
 	 * @throws SQLException if the connection to the database failed, or if the SQL command(s) within the method failed
 	 */
 	public boolean setUserSessionToken(LoginUser user, String sessionToken) throws SQLException {
-		Connection conn = this.getConnection();
-		PreparedStatement prep = conn.prepareStatement("UPDATE \"users\" SET \"session_token\" = ? WHERE (\"email\" = ? AND \"encrypted_password\" = ?)");
-		prep.setString(1, sessionToken);
-		prep.setString(2, user.getUsername());
-		prep.setString(3, user.getPassword());
 		
-		int rowsUpdated = prep.executeUpdate();
-		boolean wasSuccessful = rowsUpdated==1;
+		boolean wasSuccessful;
+		try (Connection conn = this.getConnection(); 
+				PreparedStatement prep = conn.prepareStatement("UPDATE \"users\""
+						+ " SET \"session_token\" = ? WHERE (\"email\" = ? AND \"encrypted_password\" = ?)")) {
+			
+			prep.setString(1, sessionToken);
+			prep.setString(2, user.getUsername());
+			prep.setString(3, user.getPassword());
+			
+			int rowsUpdated = prep.executeUpdate();
+			wasSuccessful = rowsUpdated==1;
+		}
 		
 		return wasSuccessful;
 	}
