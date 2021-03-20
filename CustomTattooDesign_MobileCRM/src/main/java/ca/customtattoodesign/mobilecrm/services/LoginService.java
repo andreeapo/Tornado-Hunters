@@ -31,7 +31,7 @@ public class LoginService {
 	public static final int PASSWORD_LENGTH = 64;
 	public static final String PASSWORD_REGEX = String.format("[0-9a-zA-Z]{%d}", PASSWORD_LENGTH);
 	
-	private Logger log = LoggerFactory.getLogger(this.getClass());
+	private Logger LOGGER = LoggerFactory.getLogger(this.getClass());
 	
 	/**
 	 * Determines whether the LoginUser user is a user that exists in the database, and generates a session token
@@ -50,20 +50,20 @@ public class LoginService {
 				isValidDBUser = TornadoHuntersDao.getInstance().isUserAuthorized(user.getUsername(), user.getPassword());
 			}
 			catch (IllegalArgumentException e) {
-				log.error(e.getMessage());
+				LOGGER.error(e.getStackTrace().toString());
 				throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getLocalizedMessage());
 			}
 			catch (SQLException e) {
-				log.error(e.getMessage());
+				LOGGER.error(e.getStackTrace().toString());
 				throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Database connection failed...");
 			}
 			catch (SecurityException e) {
-				log.error(e.getMessage());
+				LOGGER.error(e.getStackTrace().toString());
 				throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Cannot access user environment variables...");
 			}
 		}
 		else {
-			log.error("Invalid username('" + user.getUsername() + "') or password('" + user.getPassword() + "')");
+			LOGGER.error("Invalid username ('{}') or password ('{}')", user.getUsername(), user.getPassword());
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid user parameters...");
 		}
 		
@@ -72,7 +72,7 @@ public class LoginService {
 				sessionToken = generateSessionToken(user);
 			}
 			catch (NoSuchAlgorithmException e) {
-				log.error(e.getMessage());
+				LOGGER.error(e.getStackTrace().toString());
 				throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Internal hashing algorithm failed...");
 			}
 			
@@ -83,7 +83,7 @@ public class LoginService {
 				}
 			}
 			catch (SQLException e) {
-				log.error(e.getMessage());
+				LOGGER.error(e.getStackTrace().toString());
 				throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Database connection failed...");
 			}
 		}

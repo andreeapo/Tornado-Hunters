@@ -23,31 +23,31 @@ public class LoginServiceTest {
 	
 	@Test
 	public void testIsPasswordLengthCorrectRegular() {
-		String generatedString = "";
+		StringBuilder stringBuilder = new StringBuilder();
 		for (int i = 0; i < LoginService.PASSWORD_LENGTH; i++) {
-			generatedString += "a";
+			stringBuilder.append("a");
 		}
-		boolean isPasswordLengthCorrect = loginService.isPasswordLengthCorrect(generatedString);
+		boolean isPasswordLengthCorrect = loginService.isPasswordLengthCorrect(stringBuilder.toString());
 		assertTrue("Password length function failed...", isPasswordLengthCorrect);
 	}
 	
 	@Test
 	public void testIsPasswordLengthCorrectBoundaryIn() {
-		String generatedString = "";
+		StringBuilder stringBuilder = new StringBuilder();
 		for (int i = 0; i < LoginService.PASSWORD_LENGTH; i++) {
-			generatedString += "b";
+			stringBuilder.append("b");
 		}
-		boolean isPasswordLengthCorrect = loginService.isPasswordLengthCorrect(generatedString);
+		boolean isPasswordLengthCorrect = loginService.isPasswordLengthCorrect(stringBuilder.toString());
 		assertTrue("Password length function failed...", isPasswordLengthCorrect);
 	}
 	
 	@Test
 	public void testIsPasswordLengthCorrectBoundaryOut() {
-		String generatedString = "";
+		StringBuilder stringBuilder = new StringBuilder();
 		for (int i = 0; i < LoginService.PASSWORD_LENGTH + 1; i++) {
-			generatedString += "b";
+			stringBuilder.append("b");
 		}
-		boolean isPasswordLengthCorrect = loginService.isPasswordLengthCorrect(generatedString);
+		boolean isPasswordLengthCorrect = loginService.isPasswordLengthCorrect(stringBuilder.toString());
 		assertFalse("Password length function failed...", isPasswordLengthCorrect);
 	}
 	
@@ -67,22 +67,22 @@ public class LoginServiceTest {
 	
 	@Test
 	public void testIsPasswordRegexCorrectBoundaryIn() {
-		String generatedString = "";
+		StringBuilder stringBuilder = new StringBuilder();
 		for (int i = 0; i < LoginService.PASSWORD_LENGTH; i++) {
-			generatedString += "b";
+			stringBuilder.append("b");
 		}
-		boolean isPasswordRegexCorrect = loginService.isPasswordRegexCorrect(generatedString);
+		boolean isPasswordRegexCorrect = loginService.isPasswordRegexCorrect(stringBuilder.toString());
 		assertTrue("Password SHA regex function failed...", isPasswordRegexCorrect);
 	}
 	
 	@Test
 	public void testIsPasswordRegexCorrectBoundaryOut() {
-		String generatedString = "";
+		StringBuilder stringBuilder = new StringBuilder();
 		for (int i = 0; i < LoginService.PASSWORD_LENGTH-1; i++) {
-			generatedString += "b";
+			stringBuilder.append("b");
 		}
-		generatedString += "+";
-		boolean isPasswordRegexCorrect = loginService.isPasswordRegexCorrect(generatedString);
+		stringBuilder.append("+");
+		boolean isPasswordRegexCorrect = loginService.isPasswordRegexCorrect(stringBuilder.toString());
 		assertFalse("Password SHA regex function failed...", isPasswordRegexCorrect);
 	}
 	
