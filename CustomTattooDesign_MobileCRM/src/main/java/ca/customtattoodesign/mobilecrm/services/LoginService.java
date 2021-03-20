@@ -8,6 +8,8 @@ import java.sql.SQLException;
 import java.util.Base64;
 import java.util.regex.Pattern;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -29,6 +31,8 @@ public class LoginService {
 	public static final int PASSWORD_LENGTH = 64;
 	public static final String PASSWORD_REGEX = String.format("[0-9a-zA-Z]{%d}", PASSWORD_LENGTH);
 	
+	private Logger log = LoggerFactory.getLogger(this.getClass());
+	
 	/**
 	 * Determines whether the LoginUser user is a user that exists in the database, and generates a session token
 	 * 	 if the user exists and they requested for it. All this information is saved within the SessionUser object.
@@ -37,25 +41,29 @@ public class LoginService {
 	 * @return a SessionUser object which holds info on if the user has been authenticated and their session token
 	 */
 	public SessionUser getSessionUser(LoginUser user) {
-		boolean isValidUser = isValidLoginUser(user);
+		boolean isValidFormatUser = isValidLoginUser(user);
 		boolean isValidDBUser;
 		String sessionToken = "";
 		
-		if (isValidUser) {
+		if (isValidFormatUser) {
 			try {
 				isValidDBUser = TornadoHuntersDao.getInstance().isUserAuthorized(user.getUsername(), user.getPassword());
 			}
 			catch (IllegalArgumentException e) {
+				log.error(e.getMessage());
 				throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getLocalizedMessage());
 			}
 			catch (SQLException e) {
+				log.error(e.getMessage());
 				throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Database connection failed...");
 			}
 			catch (SecurityException e) {
+				log.error(e.getMessage());
 				throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Cannot access user environment variables...");
 			}
 		}
 		else {
+			log.error("Invalid username('" + user.getUsername() + "') or password('" + user.getPassword() + "')");
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid user parameters...");
 		}
 		
@@ -64,6 +72,7 @@ public class LoginService {
 				sessionToken = generateSessionToken(user);
 			}
 			catch (NoSuchAlgorithmException e) {
+				log.error(e.getMessage());
 				throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Internal hashing algorithm failed...");
 			}
 			
@@ -74,11 +83,12 @@ public class LoginService {
 				}
 			}
 			catch (SQLException e) {
+				log.error(e.getMessage());
 				throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Database connection failed...");
 			}
 		}
 		
-		return SessionUser.builder().validUser(isValidUser).sessionToken(sessionToken).build();
+		return SessionUser.builder().validUser(isValidDBUser).sessionToken(sessionToken).build();
 	}
 	
 	/**

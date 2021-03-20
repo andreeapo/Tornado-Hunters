@@ -1,7 +1,10 @@
 package ca.customtattoodesign.mobilecrm.controllers;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.NonNull;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -23,6 +26,8 @@ import ca.customtattoodesign.mobilecrm.services.LoginService;
 @org.springframework.web.bind.annotation.RestController
 public class RestController {
 	
+	private Logger log = LoggerFactory.getLogger(this.getClass());
+	
 	@Autowired
 	private LoginService loginUserService;
 
@@ -37,11 +42,15 @@ public class RestController {
 	 * @throws ResponseStatusException gives details on which type of exception was thrown internally and why.
 	 */
 	@PostMapping("/authenticateCredentials")
-	public SessionUser authenticateCredentials(HttpServletResponse response, @RequestBody 
+	public SessionUser authenticateCredentials(HttpServletRequest request, HttpServletResponse response, @RequestBody 
 			@NonNull LoginUser user) throws ResponseStatusException {
+		
 		response.addHeader("Access-Control-Allow-Origin", "*");
 		response.addHeader("Access-Control-Allow-Methods", "POST");
 		response.addHeader("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+		
+		log.info("Caller Address: '{}', Api Call Made: '{}'", request.getRemoteHost(), request.getServletPath());
+		
 		return loginUserService.getSessionUser(user);
 	}
 	
@@ -52,10 +61,14 @@ public class RestController {
 	 * @return {@code Pong!}
 	 */
 	@GetMapping("/ping")
-	public String ping(HttpServletResponse response) {
+	public String ping(HttpServletRequest request, HttpServletResponse response) {
+		
 		response.addHeader("Access-Control-Allow-Origin", "*");
 		response.addHeader("Access-Control-Allow-Methods", "GET");
 		response.addHeader("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+		
+		log.info("Caller Address: '{}', Api Call Made: '{}'", request.getRemoteHost(), request.getServletPath());
+		
 		return "Pong!";
 	}
 	

@@ -118,7 +118,7 @@ public class TornadoHuntersDao {
 	public boolean isUserAuthorized(String username, String password) throws SQLException {
 		boolean isUserAuthenticated = false;
 		
-		try (Connection conn = this.getConnection(); 
+		try (Connection conn = TornadoHuntersDao.getConnection(); 
 				PreparedStatement prep = conn.prepareStatement("SELECT * FROM \"users\" "
 				+ "WHERE (\"email\" = ? AND \"encrypted_password\" = ?)")) {
 			
@@ -147,7 +147,7 @@ public class TornadoHuntersDao {
 	public boolean setUserSessionToken(LoginUser user, String sessionToken) throws SQLException {
 		
 		boolean wasSuccessful;
-		try (Connection conn = this.getConnection(); 
+		try (Connection conn = TornadoHuntersDao.getConnection(); 
 				PreparedStatement prep = conn.prepareStatement("UPDATE \"users\""
 						+ " SET \"session_token\" = ? WHERE (\"email\" = ? AND \"encrypted_password\" = ?)")) {
 			
