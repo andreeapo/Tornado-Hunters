@@ -1,22 +1,22 @@
 package ca.customtattoodesign.mobilecrm.beans;
 
 import lombok.AllArgsConstructor;
-import lombok.experimental.SuperBuilder;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * The {@code SessionUser} class is mainly used as output for the RESTful API.
+ * The {@code SessionToken} class is used to store session token information.
  * 
  * @author Roman Krutikov
  */
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-@SuperBuilder
-public class SessionUser extends User {
+@Builder
+public class SessionLogin {
 	
-	private boolean validUser;
+	private String username;
 	private String sessionToken;
 	
 }

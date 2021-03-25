@@ -14,12 +14,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import ca.customtattoodesign.mobilecrm.beans.LoginUser;
 import ca.customtattoodesign.mobilecrm.beans.SessionUser;
+import ca.customtattoodesign.mobilecrm.beans.UserLogin;
 import ca.customtattoodesign.mobilecrm.dao.TornadoHuntersDao;
 
 /**
- * The {@code LoginUserService} class is used to verify login credentials, such as making the username
+ * The {@code LoginService} class is used to verify login credentials, such as making the username
  * 		and password hashes are valid formats, generating session tokens and more.
  * 
  * @author Roman Krutikov
@@ -34,14 +34,14 @@ public class LoginService {
 	private Logger LOGGER = LoggerFactory.getLogger(this.getClass());
 	
 	/**
-	 * Determines whether the LoginUser user is a user that exists in the database, and generates a session token
+	 * Determines whether the UserLogin user is a user that exists in the database, and generates a session token
 	 * 	 if the user exists and they requested for it. All this information is saved within the SessionUser object.
 	 * 
-	 * @param user the LoginUser that is being authenticated
+	 * @param user the UserLogin that is being authenticated
 	 * @return a SessionUser object which holds info on if the user has been authenticated and their session token
 	 */
-	public SessionUser getSessionUser(LoginUser user) {
-		boolean isValidFormatUser = isValidLoginUser(user);
+	public SessionUser getSessionUser(UserLogin user) {
+		boolean isValidFormatUser = isValidUserLogin(user);
 		boolean isValidDBUser;
 		String sessionToken = "";
 		SessionUser sessionUser = new SessionUser();
@@ -108,14 +108,14 @@ public class LoginService {
 	}
 	
 	/**
-	 * Checks whether or not a LoginUser's fields are in the proper format, if
+	 * Checks whether or not a UserLogin's fields are in the proper format, if
 	 * they are in a proper format that means this user could exist in the database.
 	 * 
-	 * @param user the LoginUser that is being authenticated
-	 * @return {@code true} if the LoginUser's fields could make a user in the database<br>
-	 *	       {@code false} if the LoginUser's fields would never appear in the database
+	 * @param user the UserLogin that is being authenticated
+	 * @return {@code true} if the UserLogin's fields could make a user in the database<br>
+	 *	       {@code false} if the UserLogin's fields would never appear in the database
 	 */
-	public boolean isValidLoginUser(LoginUser user) {
+	public boolean isValidUserLogin(UserLogin user) {
 		String userPassword = user.getPassword();
 		boolean isPasswordSha256 = isPasswordLengthCorrect(userPassword) && isPasswordRegexCorrect(userPassword);
 		
@@ -159,14 +159,14 @@ public class LoginService {
 	}
 	
 	/**
-	 * Generates a unique session token for a LoginUser.
+	 * Generates a unique session token for a UserLogin.
 	 * 
-	 * @param user is a LoginUser for whom the session token is being generated
+	 * @param user is a UserLogin for whom the session token is being generated
 	 * 
 	 * @return a String session token
 	 * @throws NoSuchAlgorithmException if the algorithm specified for making the token is invalid
 	 */
-	public String generateSessionToken(LoginUser user) throws NoSuchAlgorithmException {
+	public String generateSessionToken(UserLogin user) throws NoSuchAlgorithmException {
 		String sessionId = "";
 		
 		if (isUsernameNotNullOrEmpty(user.getUsername())) {

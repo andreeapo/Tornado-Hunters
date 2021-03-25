@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.server.ResponseStatusException;
 
-import ca.customtattoodesign.mobilecrm.beans.LoginUser;
+import ca.customtattoodesign.mobilecrm.beans.UserLogin;
 import ca.customtattoodesign.mobilecrm.beans.SessionUser;
 import ca.customtattoodesign.mobilecrm.services.LoginService;
 
@@ -44,7 +44,7 @@ public class RestController {
 	 * @throws ResponseStatusException gives details on which type of exception was thrown internally and why.
 	 */
 	@PostMapping("/authenticateCredentials")
-	public SessionUser authenticateCredentials(HttpServletRequest request, @RequestBody @NonNull LoginUser user) 
+	public SessionUser authenticateCredentials(HttpServletRequest request, @RequestBody @NonNull UserLogin user) 
 			throws ResponseStatusException {
 		
 		LOGGER.info("Caller Address: '{}', Api Call Made: '{}'", request.getRemoteHost(), request.getServletPath());

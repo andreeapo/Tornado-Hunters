@@ -8,14 +8,14 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * The {@code LoginUser} class is mainly used as an input to the RESTful API.
+ * The {@code UserLogin} class is mainly used as an input to the RESTful API.
  * 
  * @author Roman Krutikov
  */
 @NoArgsConstructor
 @Data
 @Builder
-public class LoginUser {
+public class UserLogin {
 	private String username;
 	private String password;
 	
@@ -29,7 +29,7 @@ public class LoginUser {
 	 * 	      Password (hashed or plain text) of the user trying to log in,
 	 * 
 	 */
-	public LoginUser(@JsonProperty("username") String username, @JsonProperty("password") String password) {
+	public UserLogin(@JsonProperty("username") String username, @JsonProperty("password") String password) {
 		this.username = username;
 		this.password = password;
 	}

@@ -11,7 +11,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.web.server.ResponseStatusException;
 
-import ca.customtattoodesign.mobilecrm.beans.LoginUser;
+import ca.customtattoodesign.mobilecrm.beans.UserLogin;
 import ca.customtattoodesign.mobilecrm.beans.SessionUser;
 
 @RunWith(SpringRunner.class)
@@ -122,42 +122,42 @@ public class LoginServiceTest {
 	}
 	
 	@Test
-	public void testIsValidLoginUserRegular() {
+	public void testIsValidUserLoginRegular() {
 		String username = System.getenv("capTestUser");
 		String password = System.getenv("capTestPassword");
 		
-		LoginUser user = LoginUser.builder().username(username).password(password).build();
-		boolean isValidUser = loginService.isValidLoginUser(user); 
+		UserLogin user = UserLogin.builder().username(username).password(password).build();
+		boolean isValidUser = loginService.isValidUserLogin(user); 
 		assertTrue("User was not validated correctly locally...", isValidUser);
 	}
 	
 	@Test
-	public void testIsValidLoginUserBoundaryIn() {
+	public void testIsValidUserLoginBoundaryIn() {
 		String username = System.getenv("capTestUser2");
 		String password = System.getenv("capTestPassword2");
 		
-		LoginUser user = LoginUser.builder().username(username).password(password).build();
-		boolean isValidUser = loginService.isValidLoginUser(user); 
+		UserLogin user = UserLogin.builder().username(username).password(password).build();
+		boolean isValidUser = loginService.isValidUserLogin(user); 
 		assertTrue("User was not validated correctly locally...", isValidUser);
 	}
 	
 	@Test
-	public void testIsValidLoginUserBoundaryOut() {
+	public void testIsValidUserLoginBoundaryOut() {
 		String username = System.getenv("capTestUser");
 		String password = System.getenv("capTestPassword") + "0";
 		
-		LoginUser user = LoginUser.builder().username(username).password(password).build();
-		boolean isValidUser = loginService.isValidLoginUser(user); 
+		UserLogin user = UserLogin.builder().username(username).password(password).build();
+		boolean isValidUser = loginService.isValidUserLogin(user); 
 		assertFalse("User was not validated correctly locally...", isValidUser);
 	}
 	
 	@Test
-	public void testIsValidLoginUserException() {
+	public void testIsValidUserLoginException() {
 		String username = null;
 		String password = System.getenv("capTestPassword");
 		
-		LoginUser user = LoginUser.builder().username(username).password(password).build();
-		boolean isValidUser = loginService.isValidLoginUser(user); 
+		UserLogin user = UserLogin.builder().username(username).password(password).build();
+		boolean isValidUser = loginService.isValidUserLogin(user); 
 		assertFalse("User was not validated correctly...", isValidUser);
 	}
 	
@@ -166,7 +166,7 @@ public class LoginServiceTest {
 		String username = System.getenv("capTestUser");
 		String password = System.getenv("capTestPassword");
 		
-		LoginUser user = LoginUser.builder().username(username).password(password).build();
+		UserLogin user = UserLogin.builder().username(username).password(password).build();
 		
 		SessionUser sessionUser = loginService.getSessionUser(user);
 		
@@ -179,7 +179,7 @@ public class LoginServiceTest {
 		String username = System.getenv("capTestUser2");
 		String password = System.getenv("capTestPassword2");
 		
-		LoginUser user = LoginUser.builder().username(username).password(password).build();
+		UserLogin user = UserLogin.builder().username(username).password(password).build();
 		
 		SessionUser sessionUser = loginService.getSessionUser(user); 
 
@@ -192,7 +192,7 @@ public class LoginServiceTest {
 		String username = System.getenv("capTestUser");
 		String password = System.getenv("capTestPassword") + "0";
 		
-		LoginUser user = LoginUser.builder().username(username).password(password).build();
+		UserLogin user = UserLogin.builder().username(username).password(password).build();
 		
 		SessionUser sessionUser = loginService.getSessionUser(user); 
 
@@ -205,7 +205,7 @@ public class LoginServiceTest {
 		String username = null;
 		String password = System.getenv("capTestPassword");
 		
-		LoginUser user = LoginUser.builder().username(username).password(password).build();
+		UserLogin user = UserLogin.builder().username(username).password(password).build();
 		
 		SessionUser sessionUser = loginService.getSessionUser(user); 
 
@@ -218,7 +218,7 @@ public class LoginServiceTest {
 		String username = System.getenv("capTestUser");
 		String password = System.getenv("capTestPassword");
 		
-		LoginUser user = LoginUser.builder().username(username).password(password).build();
+		UserLogin user = UserLogin.builder().username(username).password(password).build();
 		
 		String sessionId = loginService.generateSessionToken(user); 
 
@@ -230,7 +230,7 @@ public class LoginServiceTest {
 		String username = "0";
 		String password = System.getenv("capTestPassword2");
 		
-		LoginUser user = LoginUser.builder().username(username).password(password).build();
+		UserLogin user = UserLogin.builder().username(username).password(password).build();
 		
 		String sessionId = loginService.generateSessionToken(user); 
 
@@ -242,7 +242,7 @@ public class LoginServiceTest {
 		String username = "";
 		String password = System.getenv("capTestPassword2");
 		
-		LoginUser user = LoginUser.builder().username(username).password(password).build();
+		UserLogin user = UserLogin.builder().username(username).password(password).build();
 		
 		String sessionId = loginService.generateSessionToken(user); 
 
@@ -254,7 +254,7 @@ public class LoginServiceTest {
 		String username = null;
 		String password = System.getenv("capTestPassword2");
 		
-		LoginUser user = LoginUser.builder().username(username).password(password).build();
+		UserLogin user = UserLogin.builder().username(username).password(password).build();
 		
 		String sessionId = loginService.generateSessionToken(user); 
 

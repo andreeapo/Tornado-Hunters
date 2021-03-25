@@ -8,7 +8,7 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.Properties;
 
-import ca.customtattoodesign.mobilecrm.beans.LoginUser;
+import ca.customtattoodesign.mobilecrm.beans.UserLogin;
 import ca.customtattoodesign.mobilecrm.beans.SessionUser;
 
 /**
@@ -188,7 +188,7 @@ public class TornadoHuntersDao {
 			   {@code false} if the user's session was not saved successfully into the database
 	 * @throws SQLException if the connection to the database failed, or if the SQL command(s) within the method failed
 	 */
-	public boolean setUserSessionToken(LoginUser user, String sessionToken) throws SQLException {
+	public boolean setUserSessionToken(UserLogin user, String sessionToken) throws SQLException {
 		
 		boolean wasSuccessful;
 		try (Connection conn = TornadoHuntersDao.getConnection(); 
