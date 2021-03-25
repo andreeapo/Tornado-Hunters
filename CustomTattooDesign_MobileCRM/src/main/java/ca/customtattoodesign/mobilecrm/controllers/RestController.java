@@ -44,11 +44,10 @@ public class RestController {
 	 * Authenticates the credentials of the user and returns an object with info on whether or not the user is 
 	 * valid and/or their session token.
 	 * 
-	 * @param response handles adding special headers to the HTTP response object
 	 * @param user is a UserLogin that is attempting to authenticate their login credentials
 	 * @return {@code SessionUser} object which contains info on whether or not the user is valid 
 	 * 		and/or their session token
-	 * @throws ResponseStatusException gives details on which type of exception was thrown internally and why.
+	 * @throws ResponseStatusException gives details on which type of exception was thrown internally and why
 	 */
 	@PostMapping("/authenticateCredentials")
 	public SessionUser authenticateCredentials(HttpServletRequest request, @RequestBody @NonNull UserLogin user) 
@@ -59,6 +58,12 @@ public class RestController {
 		return loginService.getSessionUser(user);
 	}
 	
+	/**
+	 * Gets a list of unclaimed jobs, will return an empty list if no unclaimed jobs are found.
+	 * 
+	 * @return {@code List of Job} which is a list of jobs that have not been claimed
+	 * @throws ResponseStatusException gives details on which type of exception was thrown internally and why
+	 */
 	@PostMapping("/fetchUnclaimedJobs")
 	public List<Job> fetchUnclaimedJobs(HttpServletRequest request) throws ResponseStatusException {
 		
@@ -70,7 +75,6 @@ public class RestController {
 	/**
 	 * A simple method that runs "Pong!", this method can be used for testing if the API is online.
 	 * 
-	 * @param response handles adding special headers to the HTTP response object
 	 * @return {@code Pong!}
 	 */
 	@GetMapping("/ping")
