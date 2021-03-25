@@ -6,9 +6,13 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
 import ca.customtattoodesign.mobilecrm.beans.UserLogin;
+import ca.customtattoodesign.mobilecrm.beans.Job;
 import ca.customtattoodesign.mobilecrm.beans.SessionUser;
 
 /**
@@ -38,8 +42,7 @@ public class TornadoHuntersDao {
 	 * 
 	 * @return The singleton instance of the TornadoHuntersDao object
 	 * 
-	 * @throws ClassNotFoundException when the database driver is not found
-	 * @throws NullPointerException when required user environment variables are not set
+	 * @throws IllegalArgumentException when required user environment variables are not set
 	 * @throws SecurityException when java is unable to access the user environment variables
 	 * @throws NumberFormatException when certain environment variables that should be integers are
 	 * 		set as non-integer values
@@ -76,10 +79,10 @@ public class TornadoHuntersDao {
 			}
 			catch (NumberFormatException e) {}
 			
-			user = envUser;
-			password = envPassword;
-			host = envHost;
-			database = envDatabase;
+			user = envUser.trim();
+			password = envPassword.trim();
+			host = envHost.trim();
+			database = envDatabase.trim();
 			port = possiblePort;
 			
 			URL = String.format(templateURL, host, port, database);
@@ -182,7 +185,7 @@ public class TornadoHuntersDao {
 	/**
 	 * Sets a generated session token to a user in the database.
 	 *  
-	 * @param user the LoginUser to which the session token is being assigned to
+	 * @param user the UserLogin to which the session token is being assigned to
 	 * @param sessionToken a previously generated String token to save to the database
 	 * @return {@code true} if the user's session was saved successfully into the database<br>
 			   {@code false} if the user's session was not saved successfully into the database
@@ -191,9 +194,9 @@ public class TornadoHuntersDao {
 	public boolean setUserSessionToken(UserLogin user, String sessionToken) throws SQLException {
 		
 		boolean wasSuccessful;
+		String sql = "UPDATE \"users\" SET \"session_token\" = ? WHERE (\"email\" = ? AND \"encrypted_password\" = ?)";
 		try (Connection conn = TornadoHuntersDao.getConnection(); 
-				PreparedStatement prep = conn.prepareStatement("UPDATE \"users\""
-						+ " SET \"session_token\" = ? WHERE (\"email\" = ? AND \"encrypted_password\" = ?)")) {
+				PreparedStatement prep = conn.prepareStatement(sql)) {
 			
 			prep.setString(1, sessionToken);
 			prep.setString(2, user.getUsername());
@@ -204,6 +207,43 @@ public class TornadoHuntersDao {
 		}
 		
 		return wasSuccessful;
+	}
+	
+	
+	/**
+	 * Gets a list of all unclaimed Jobs from the database/
+	 * 
+	 * @return List of Jobs that have not been claimed
+	 * @throws SQLException if the connection to the database failed, or if the SQL command(s) within the method failed
+	 */
+	public List<Job> fetchUnclaimedJobs() throws SQLException {
+		
+		List<Job> jobs = new ArrayList<Job>();
+		String sql = "SELECT * from \"jobs\" WHERE \"state\"='queued'";
+		try (Connection conn = TornadoHuntersDao.getConnection(); 
+				Statement prep = conn.createStatement()) {
+			
+			ResultSet results = prep.executeQuery(sql);
+			
+			while (results.next()) {
+				
+				Job tempJob = new Job();
+				tempJob.setJobId(results.getInt("id"));
+				tempJob.setStatus(results.getString("state"));
+				tempJob.setTitle(results.getString("title"));
+				tempJob.setCustomerName(results.getString("customer"));
+				tempJob.setTattooLocation(results.getString("tattoo_position"));
+				tempJob.setTattooType(results.getString("size"));
+				tempJob.setTattooStyle(results.getString("style"));
+				tempJob.setColor(results.getBoolean("color"));
+				tempJob.setCommission(results.getDouble("commission"));
+				tempJob.setDescription(results.getString("description"));
+				jobs.add(tempJob);
+				
+			}
+		}
+		
+		return jobs;
 	}
 
 }

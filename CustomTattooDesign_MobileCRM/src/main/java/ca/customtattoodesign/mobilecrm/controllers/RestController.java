@@ -1,5 +1,7 @@
 package ca.customtattoodesign.mobilecrm.controllers;
 
+import java.util.List;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -15,7 +17,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.server.ResponseStatusException;
 
 import ca.customtattoodesign.mobilecrm.beans.UserLogin;
+import ca.customtattoodesign.mobilecrm.beans.Job;
 import ca.customtattoodesign.mobilecrm.beans.SessionUser;
+import ca.customtattoodesign.mobilecrm.services.JobService;
 import ca.customtattoodesign.mobilecrm.services.LoginService;
 
 /**
@@ -31,14 +35,17 @@ public class RestController {
 	private Logger LOGGER = LoggerFactory.getLogger(this.getClass());
 	
 	@Autowired
-	private LoginService loginUserService;
+	private LoginService loginService;
+	
+	@Autowired
+	private JobService jobService;
 
 	/**
 	 * Authenticates the credentials of the user and returns an object with info on whether or not the user is 
 	 * valid and/or their session token.
 	 * 
 	 * @param response handles adding special headers to the HTTP response object
-	 * @param user is a LoginUser that is attempting to authenticate their login credentials
+	 * @param user is a UserLogin that is attempting to authenticate their login credentials
 	 * @return {@code SessionUser} object which contains info on whether or not the user is valid 
 	 * 		and/or their session token
 	 * @throws ResponseStatusException gives details on which type of exception was thrown internally and why.
@@ -49,7 +56,15 @@ public class RestController {
 		
 		LOGGER.info("Caller Address: '{}', Api Call Made: '{}'", request.getRemoteHost(), request.getServletPath());
 		
-		return loginUserService.getSessionUser(user);
+		return loginService.getSessionUser(user);
+	}
+	
+	@PostMapping("/fetchUnclaimedJobs")
+	public List<Job> fetchUnclaimedJobs(HttpServletRequest request) throws ResponseStatusException {
+		
+		LOGGER.info("Caller Address: '{}', Api Call Made: '{}'", request.getRemoteHost(), request.getServletPath());
+		
+		return jobService.fetchUnclaimedJobs();
 	}
 	
 	/**

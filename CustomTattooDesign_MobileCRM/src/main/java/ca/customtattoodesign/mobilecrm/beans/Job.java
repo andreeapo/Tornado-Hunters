@@ -21,7 +21,8 @@ public class Job {
 	private String title;
 	private String customerName;
 	private String tattooLocation;
-	private String tatooType;
+	private String tattooType;
+	private String tattooStyle;
 	private boolean color;
 	private double commission;
 	private String description;
