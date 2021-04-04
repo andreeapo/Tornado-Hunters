@@ -17,7 +17,7 @@ import lombok.NoArgsConstructor;
 public class Job {
 
 	private int jobId;
-	private String status;
+	private String state;
 	private String title;
 	private String customerName;
 	private String tattooLocation;

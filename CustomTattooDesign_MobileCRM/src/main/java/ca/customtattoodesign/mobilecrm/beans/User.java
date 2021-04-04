@@ -16,6 +16,7 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 public class User {
 	
+	private int id;
 	private String firstName;
 	private String lastName;
 	private String role;
@@ -24,5 +25,11 @@ public class User {
 	private int maxJobValue;
 	private double averageTimeToCompletion;
 	private double averageTimeToIntroduction;
+	
+	private int refundsLast30Days;
+	private int refundsLifetime;
+	private double earningsLifetime;
+	private int jobsTakenLifetime;
+	private int jobsTakenLast30Days;
 	
 }

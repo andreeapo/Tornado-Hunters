@@ -14,6 +14,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import ca.customtattoodesign.mobilecrm.beans.SessionLogin;
 import ca.customtattoodesign.mobilecrm.beans.SessionUser;
 import ca.customtattoodesign.mobilecrm.beans.UserLogin;
 import ca.customtattoodesign.mobilecrm.dao.TornadoHuntersDao;
@@ -34,21 +35,23 @@ public class LoginService {
 	private Logger LOGGER = LoggerFactory.getLogger(this.getClass());
 	
 	/**
-	 * Determines whether the UserLogin user is a user that exists in the database, and generates a session token
-	 * 	 if the user exists and they requested for it. All this information is saved within the SessionUser object.
+	 * Determines whether the UserLogin user is a user that exists in the database, and generates a session token. 
+	 * Information about the user is also fetched. All this information is saved within the SessionUser object.
 	 * 
 	 * @param user the UserLogin that is being authenticated
-	 * @return a SessionUser object which holds info on if the user has been authenticated and their session token
+	 * @return a SessionUser object which holds info on if the user has been authenticated and their session token,
+	 * 		and general info about the user
 	 */
-	public SessionUser getSessionUser(UserLogin user) {
-		boolean isValidFormatUser = isValidUserLogin(user);
+	public SessionUser getSessionUser(UserLogin userLogin) {
+		boolean isValidFormatUser = isValidUserLogin(userLogin);
 		boolean isValidDBUser;
 		String sessionToken = "";
 		SessionUser sessionUser = new SessionUser();
 		
 		if (isValidFormatUser) {
 			try {
-				isValidDBUser = TornadoHuntersDao.getInstance().isUserAuthorized(user.getUsername(), user.getPassword());
+				isValidDBUser = TornadoHuntersDao.getInstance()
+						.isUserLoginAuthorized(userLogin.getUsername(), userLogin.getPassword());
 				sessionUser.setValidUser(isValidDBUser);
 			}
 			catch (IllegalArgumentException e) {
@@ -65,28 +68,26 @@ public class LoginService {
 			}
 		}
 		else {
-			LOGGER.error("Invalid username ('{}') or password ('{}')", user.getUsername(), user.getPassword());
+			LOGGER.error("Invalid username ('{}') or password ('{}')", userLogin.getUsername(), userLogin.getPassword());
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid user parameters...");
 		}
 		
 		if (isValidDBUser) {
 			try {
 				boolean wasSuccessful = TornadoHuntersDao.getInstance()
-						.fetchSessionUserFields(sessionUser, user.getUsername(), user.getPassword());
+						.fetchSessionUserId(sessionUser, userLogin.getUsername(), userLogin.getPassword());
 				if (!wasSuccessful) {
-					throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Unable to get session user fields...");
+					throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Unable to get user fields...");
 				}
-				
 			}
 			catch (SQLException e) {
 				LOGGER.error(e.getMessage());
 				throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Getting user data from database failed...");
 			}
-
 			
 			try {
-				sessionToken = generateSessionToken(user);
-				boolean wasSuccessful = TornadoHuntersDao.getInstance().setUserSessionToken(user, sessionToken);
+				sessionToken = generateSessionToken(userLogin);
+				boolean wasSuccessful = TornadoHuntersDao.getInstance().setUserSessionToken(sessionUser.getId(), sessionToken);
 				if (!wasSuccessful) {
 					throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Database saving session failed...");
 				}
@@ -102,6 +103,81 @@ public class LoginService {
 				LOGGER.error(e.getMessage());
 				throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Internal hashing algorithm failed...");
 			}
+			
+			try {
+				boolean wasSuccessful = TornadoHuntersDao.getInstance()
+						.fetchSessionUserFields(sessionUser, userLogin.getUsername(), sessionUser.getSessionToken());
+				if (!wasSuccessful) {
+					throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Unable to get user fields...");
+				}
+			}
+			catch (SQLException e) {
+				LOGGER.error(e.getMessage());
+				throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Getting user data from database failed...");
+			}
+		}
+		
+		return sessionUser;
+	}
+	
+	/**
+	 * Determines whether the SessionLogin (authentication via session token) exists in the database, and generates 
+	 * 		a session token if the user exists and they requested for it. Information about the user is also fetched.  
+	 * 		All this information is saved within the SessionUser object.
+	 * 
+	 * @param session the SessionLogin that is being authenticated
+	 * @return a SessionUser object which holds info on if the user has been authenticated and their session token,
+	 * 		and general info about the user
+	 */
+	public SessionUser getSessionUser(SessionLogin sessionLogin) {
+		
+		boolean isValidFormatSessionUser = isValidSessionLogin(sessionLogin);
+		boolean isValidDBUser = false;
+		SessionUser sessionUser = new SessionUser();
+		
+		if (isValidFormatSessionUser) {
+			
+			try {
+				isValidDBUser = TornadoHuntersDao.getInstance()
+						.isSessionLoginAuthorized(sessionLogin.getUsername(), sessionLogin.getSessionToken());
+				sessionUser.setValidUser(isValidDBUser);
+			}
+			catch (SQLException e) {
+				LOGGER.error(e.getMessage());
+				throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Database connection failed...");
+			}
+			catch (SecurityException e) {
+				LOGGER.error(e.getMessage());
+				throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Cannot access user environment variables...");
+			}
+			
+			if (isValidDBUser) {
+				
+				sessionUser.setId(sessionLogin.getId());
+				sessionUser.setSessionToken(sessionLogin.getSessionToken());
+				
+				try {
+					boolean wasSuccessful = TornadoHuntersDao.getInstance()
+							.fetchSessionUserFields(sessionUser, sessionLogin.getUsername(), sessionLogin.getSessionToken());
+					if (!wasSuccessful) {
+						throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Unable to get user fields...");
+					}
+					
+				}
+				catch (SQLException e) {
+					LOGGER.error(e.getMessage());
+					throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Getting user data from database failed...");
+				}
+			}
+			else {
+				sessionUser.setSessionToken("");
+			}
+
+		}
+		else {
+			LOGGER.error("Invalid username ('{}') or session token ('{}')", 
+					sessionLogin.getUsername(), sessionLogin.getSessionToken());
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid session login parameters...");
 		}
 		
 		return sessionUser;
@@ -123,6 +199,27 @@ public class LoginService {
 		boolean isUsernameValid = isUsernameNotNullOrEmpty(userName);
 		
 		return isPasswordSha256 && isUsernameValid;
+	}
+	
+	/**
+	 * Checks whether or not a SessionLogin's fields are in the proper format, if
+	 * they are in a proper format that means this user could exist in the database.
+	 * 
+	 * @param user the SessionLogin that is being authenticated
+	 * @return {@code true} if the SessionLogin's fields could exist in the database<br>
+	 *	       {@code false} if the SessionLogin's fields would never appear in the database
+	 */
+	public boolean isValidSessionLogin(SessionLogin sessionLogin) {
+		String username = sessionLogin.getUsername();
+		boolean isUsernameValid = isUsernameNotNullOrEmpty(username);
+		
+		String sessionToken = sessionLogin.getSessionToken();
+		boolean isSessionTokenValid = isSessionTokenNotNullOrEmpty(sessionToken);
+		
+		int userId = sessionLogin.getId();
+		boolean isUserIdValid = isUserIdValid(userId);
+		
+		return isUsernameValid && isSessionTokenValid && isUserIdValid;
 	}
 	
 	/**
@@ -155,7 +252,39 @@ public class LoginService {
 			   {@code false} if String (username) is null or empty
 	 */
 	public boolean isUsernameNotNullOrEmpty(String username) {
-		return (username != null && username.length() > 0);
+		return isStringNotNullOrEmpty(username);
+	}
+	
+	/**
+	 * Checks whether or not the String (sessionToken) is empty or null.
+	 * 
+	 * @param username is the String that is being checked
+	 * @return {@code true} if String (sessionToken) is not null or empty <br>
+			   {@code false} if String (sessionToken) is null or empty
+	 */
+	public boolean isSessionTokenNotNullOrEmpty(String sessionToken) {
+		return isStringNotNullOrEmpty(sessionToken);
+	}
+	
+	/**
+	 * Checks whether or not the String (str) is empty or null.
+	 * 
+	 * @param username is the String that is being checked
+	 * @return {@code true} if String (str) is not null or empty <br>
+			   {@code false} if String (str) is null or empty
+	 */
+	public boolean isStringNotNullOrEmpty(String str) {
+		return (str != null && str.length() > 0);
+	}
+	
+	/**
+	 * 
+	 * @param userId the user id that is being checked
+	 * @return {@code true} if the id could exist in the database <br>
+			   {@code false} if the id could never exist in the database
+	 */
+	public boolean isUserIdValid(int userId) {
+		return userId > 0;
 	}
 	
 	/**

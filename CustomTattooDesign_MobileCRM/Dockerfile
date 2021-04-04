@@ -8,8 +8,15 @@ ENV capDBusername=setWhenCompiling \
 	capDBhost=setWhenCompiling \
 	capDBdatabase=setWhenCompiling \
 	capDBport=setWhenCompiling \
+	capTestId=setWhenCompiling \
+	capTestId2=setWhenCompiling \
 	capTestUser=setWhenCompiling \	
 	capTestPassword=setWhenCompiling \
 	capTestUser2=setWhenCompiling \	
-	capTestPassword2=setWhenCompiling
-	
+	capTestPassword2=setWhenCompiling \
+	capTestSessionToken=setWhenCompiling \
+	capTestSessionToken2=setWhenCompiling \
+	capTestJobId=setWhenCompiling \
+	capTestJobId2=setWhenCompiling \
+	capTestJobExpectedSize=setWhenCompiling \
+	capTestJobExpectedSize2=setWhenCompiling 

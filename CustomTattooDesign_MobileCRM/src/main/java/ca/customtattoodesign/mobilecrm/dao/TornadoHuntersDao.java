@@ -13,7 +13,7 @@ import java.util.Properties;
 
 import ca.customtattoodesign.mobilecrm.beans.UserLogin;
 import ca.customtattoodesign.mobilecrm.beans.Job;
-import ca.customtattoodesign.mobilecrm.beans.SessionUser;
+import ca.customtattoodesign.mobilecrm.beans.User;
 
 /**
  * The {@code TornadoHuntersDao} class is a singleton data access class for 
@@ -111,7 +111,7 @@ public class TornadoHuntersDao {
 	}
 	
 	/**
-	 * This method checks whether the user exists within the database of users and returns
+	 * This method checks whether the user exists within the table of users and returns
 	 * 		the result of the operation.
 	 * 
 	 * @param username a String that will be checked against usernames in the database
@@ -120,7 +120,7 @@ public class TornadoHuntersDao {
 			   {@code false} if the user does not exist in the database
 	 * @throws SQLException if the connection to the database failed, or if the SQL command(s) within the method failed
 	 */
-	public boolean isUserAuthorized(String username, String password) throws SQLException {
+	public boolean isUserLoginAuthorized(String username, String password) throws SQLException {
 		boolean isUserAuthenticated = false;
 		String sql = "SELECT * FROM \"users\" WHERE (\"email\" = ? AND \"encrypted_password\" = ?)";
 		
@@ -141,19 +141,50 @@ public class TornadoHuntersDao {
 	}
 	
 	/**
-	 * Gets various fields from the database to complete a SessionUser object.
-	 *  
-	 * @param sessionUser the SessionUser object into which the fields from the database are loaded into
+	 * This method checks whether the session exists within the table of sessions and returns
+	 * 		the result of the operation.
+	 * 
 	 * @param username a String that will be checked against usernames in the database
-	 * @param password a String that will be checked against passwords in the database
-	 * @return {@code true} if the user was found in the database and the fields were fetched successfully<br>
-			   {@code false} if the user was NOT found in the database or the fields from the database were not fetched
+	 * @param sessionToken a String that will be checked against session tokens in the database
+	 * @return {@code true} if the user + session token exists in the database <br>
+			   {@code false} if the user + session token does not exist in the database
 	 * @throws SQLException if the connection to the database failed, or if the SQL command(s) within the method failed
 	 */
-	public boolean fetchSessionUserFields(SessionUser sessionUser, String username, String password) throws SQLException {
-		boolean updateSuccessful = false;
-		String sql = "SELECT * FROM users INNER JOIN user_profiles ON users.id = user_profiles.user_id "
-				+ "WHERE (email = ? AND encrypted_password = ?)";
+	public boolean isSessionLoginAuthorized(String username, String sessionToken) throws SQLException {
+		boolean isUserAuthenticated = false;
+		
+		String sql = "SELECT valid_token(?,?)";
+		
+		try (Connection conn = TornadoHuntersDao.getConnection(); 
+				PreparedStatement prep = conn.prepareStatement(sql)) {
+			
+			prep.setString(1, username);
+			prep.setString(2, sessionToken);
+			
+			ResultSet results = prep.executeQuery();
+			
+			if (results.next()) {
+				isUserAuthenticated = results.getBoolean("valid_token");
+			}		
+		}
+		
+		return isUserAuthenticated;
+	}
+	
+	
+	/**
+	 * Gets a user's ID from the database based on their login info.
+	 *  
+	 * @param user the User object into which the fields from the database are loaded into
+	 * @param username a String that will be checked against usernames in the database
+	 * @param password a String that will be checked against passwords in the database
+	 * @return {@code true} if the user was found in the database and the id was fetched successfully<br>
+			   {@code false} if the user was NOT found in the database or the id was not fetched successfully
+	 * @throws SQLException if the connection to the database failed, or if the SQL command(s) within the method failed
+	 */
+	public boolean fetchSessionUserId(User user, String username, String password) throws SQLException {
+		boolean fetchSuccessful = false;
+		String sql = "SELECT * FROM users WHERE (email = ? AND encrypted_password = ?)";
 		
 		try (Connection conn = TornadoHuntersDao.getConnection(); 
 				PreparedStatement prep = conn.prepareStatement(sql)){
@@ -165,16 +196,56 @@ public class TornadoHuntersDao {
 		    
 			if (results.next()) {
 				
-				sessionUser.setFirstName(results.getString("first_name"));
-				sessionUser.setLastName(results.getString("last_name"));
-				sessionUser.setPaypalEmail(results.getString("paypal_email"));
-				sessionUser.setRole(results.getString("role"));
+				user.setId(results.getInt("id"));
 				
-				sessionUser.setOverrideJobLimit(results.getInt("override_job_limit"));
-				sessionUser.setMaxJobValue(results.getInt("max_job_value"));
+				fetchSuccessful = true;
+			}
+		}
+		return fetchSuccessful;
+	}
+	
+	/**
+	 * Gets various fields from the database to complete a User object.
+	 *  
+	 * @param user the User object into which the fields from the database are loaded into
+	 * @param username a String that will be checked against usernames in the database
+	 * @param sessionToken a String that will be checked against session tokens in the database
+	 * @return {@code true} if the user and session token were found in the database and the fields were 
+	 * 		fetched successfully<br>
+	 *		   {@code false} if the user or session was NOT found in the database or the fields from the 
+	 *		database were not fetched
+	 * @throws SQLException if the connection to the database failed, or if the SQL command(s) within the method failed
+	 */
+	public boolean fetchSessionUserFields(User user, String username, String sessionToken) throws SQLException{
+		boolean updateSuccessful = false;
+		String sql = "SELECT * FROM get_artist_info(?,?)";
+		
+		try (Connection conn = TornadoHuntersDao.getConnection(); 
+				PreparedStatement prep = conn.prepareStatement(sql)){
+			
+			prep.setString(1, username);
+			prep.setString(2, sessionToken);
+			
+			ResultSet results = prep.executeQuery();
+		    
+			if (results.next()) {
 				
-				sessionUser.setAverageTimeToCompletion(results.getDouble("average_time_to_completion"));
-				sessionUser.setAverageTimeToIntroduction(results.getDouble("average_time_to_introduction"));
+				user.setFirstName(results.getString("first_name"));
+				user.setLastName(results.getString("last_name"));
+				user.setPaypalEmail(results.getString("paypal_email"));
+				user.setRole(results.getString("role"));
+				
+				user.setOverrideJobLimit(results.getInt("override_job_limit"));
+				user.setMaxJobValue(results.getInt("max_job_value"));
+				
+				user.setAverageTimeToCompletion(results.getDouble("average_time_to_completion"));
+				user.setAverageTimeToIntroduction(results.getDouble("average_time_to_introduction"));
+				
+				user.setJobsTakenLast30Days(results.getInt("jobs_taken_last_30_days"));
+				user.setJobsTakenLifetime(results.getInt("jobs_taken_lifetime"));
+				user.setRefundsLast30Days(results.getInt("refunds_last_30_days"));
+				user.setRefundsLifetime(results.getInt("refunds_lifetime"));
+				user.setEarningsLifetime(results.getDouble("earnings_lifetime"));
 				
 				updateSuccessful = true;
 			}
@@ -191,16 +262,15 @@ public class TornadoHuntersDao {
 			   {@code false} if the user's session was not saved successfully into the database
 	 * @throws SQLException if the connection to the database failed, or if the SQL command(s) within the method failed
 	 */
-	public boolean setUserSessionToken(UserLogin user, String sessionToken) throws SQLException {
+	public boolean setUserSessionToken(int userId, String sessionToken) throws SQLException {
 		
 		boolean wasSuccessful;
-		String sql = "UPDATE \"users\" SET \"session_token\" = ? WHERE (\"email\" = ? AND \"encrypted_password\" = ?)";
+		String sql = "INSERT INTO \"session_tokens\" (user_id, session_token) VALUES (?, ?)";
 		try (Connection conn = TornadoHuntersDao.getConnection(); 
 				PreparedStatement prep = conn.prepareStatement(sql)) {
 			
-			prep.setString(1, sessionToken);
-			prep.setString(2, user.getUsername());
-			prep.setString(3, user.getPassword());
+			prep.setInt(1, userId);
+			prep.setString(2, sessionToken);
 			
 			int rowsUpdated = prep.executeUpdate();
 			wasSuccessful = rowsUpdated==1;
@@ -211,14 +281,14 @@ public class TornadoHuntersDao {
 	
 	
 	/**
-	 * Gets a list of all unclaimed Jobs from the database/
+	 * Gets a list of all unclaimed jobs from the database.
 	 * 
 	 * @return List of Jobs that have not been claimed
 	 * @throws SQLException if the connection to the database failed, or if the SQL command(s) within the method failed
 	 */
 	public List<Job> fetchUnclaimedJobs() throws SQLException {
 		
-		List<Job> jobs = new ArrayList<Job>();
+		List<Job> jobs = new ArrayList<>();
 		String sql = "SELECT * from \"jobs\" WHERE \"state\"='queued'";
 		try (Connection conn = TornadoHuntersDao.getConnection(); 
 				Statement prep = conn.createStatement()) {
@@ -229,7 +299,7 @@ public class TornadoHuntersDao {
 				
 				Job tempJob = new Job();
 				tempJob.setJobId(results.getInt("id"));
-				tempJob.setStatus(results.getString("state"));
+				tempJob.setState(results.getString("state"));
 				tempJob.setTitle(results.getString("title"));
 				tempJob.setCustomerName(results.getString("customer"));
 				tempJob.setTattooLocation(results.getString("tattoo_position"));
@@ -244,6 +314,103 @@ public class TornadoHuntersDao {
 		}
 		
 		return jobs;
+	}
+
+	/**
+	 * Gets a list of all artist specific Jobs from the database.
+	 * 
+	 * @return List of Jobs that have been assigned to an artist
+	 * @throws SQLException if the connection to the database failed, or if the SQL command(s) within the method failed
+	 */
+	public List<Job> fetchArtistJobs(String username, String sessionToken) throws SQLException{
+		
+		List<Job> jobs = new ArrayList<>();
+		String sql = "SELECT * FROM get_artist_jobs(?,?)";
+		try (Connection conn = TornadoHuntersDao.getConnection(); 
+				PreparedStatement prep = conn.prepareStatement(sql)) {
+			
+			prep.setString(1, username);
+			prep.setString(2, sessionToken);
+			
+			ResultSet results = prep.executeQuery();
+			
+			while (results.next()) {
+				
+				Job tempJob = new Job();
+				tempJob.setJobId(results.getInt("id"));
+				tempJob.setState(results.getString("state"));
+				tempJob.setTitle(results.getString("title"));
+				tempJob.setCustomerName(results.getString("customer"));
+				tempJob.setTattooLocation(results.getString("tattoo_position"));
+				tempJob.setTattooType(results.getString("size"));
+				tempJob.setTattooStyle(results.getString("style"));
+				tempJob.setColor(results.getBoolean("color"));
+				tempJob.setCommission(results.getDouble("commission"));
+				tempJob.setDescription(results.getString("description"));
+				jobs.add(tempJob);
+				
+			}
+		}
+		
+		return jobs;
+	}
+
+	/**
+	 * Claims a job for the sessionUser and returns if the claiming the job was successful.
+	 * 
+	 * @param sessionLogin the Session Login object containing authentication info
+	 * @param jobId ID of the job that the user is trying to claim
+	 * @return {@code true} if the claim was successful<br>
+	 *	       {@code false} if the claim failed
+	 * @throws SQLException if the connection to the database failed, or if the SQL command(s) within the method failed
+	 */
+	public boolean claimJob(int jobId, String username, String sessionToken) throws SQLException {
+		
+		boolean claimedSuccessfully = false;
+		
+		String sql = "SELECT claim_job(?,?,?)";
+		
+		try (Connection conn = TornadoHuntersDao.getConnection(); 
+				PreparedStatement prep = conn.prepareStatement(sql)) {
+			
+			prep.setString(1, username);
+			prep.setString(2, sessionToken);
+			prep.setInt(3, jobId);
+			
+			ResultSet results = prep.executeQuery();
+			
+			if (results.next()) {
+				claimedSuccessfully = results.getBoolean("claim_job");
+			}		
+		}
+		
+		return claimedSuccessfully;
+	}
+	
+	/**
+	 * Removes a session token from the database.
+	 * 
+	 * @param userId the userId of the user whose session token is being deleted
+	 * @param sessionToken the SessionToken that needs to be deleted
+	 * @throws SQLException if the connection to the database failed, or if the SQL command(s) within the method failed
+	 */
+	public boolean removeSessionToken(int userId, String sessionToken) throws SQLException {
+		
+		boolean successfullyRemoved = false;
+		
+		String sql = "DELETE FROM session_tokens WHERE user_id = ? AND session_token = ?";
+		
+		try (Connection conn = TornadoHuntersDao.getConnection(); 
+				PreparedStatement prep = conn.prepareStatement(sql)) {
+			
+			prep.setInt(1, userId);
+			prep.setString(2, sessionToken);
+			
+			int valuesRemoved = prep.executeUpdate();
+			successfullyRemoved = valuesRemoved > 0;
+		}
+		
+		return successfullyRemoved;
 	}
 
 }

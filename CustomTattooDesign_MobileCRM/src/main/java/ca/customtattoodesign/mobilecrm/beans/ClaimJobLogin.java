@@ -6,7 +6,8 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
 /**
- * The {@code SessionLogin} class is used to store session login information.
+ * The {@code ClaimJobLogin} class is used to store session login information as well as
+ * 		the id of the Job a user wants.
  * 
  * @author Roman Krutikov
  */
@@ -14,10 +15,7 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 @Data
 @SuperBuilder
-public class SessionLogin {
-	
-	private int id;
-	private String username;
-	private String sessionToken;
-	
+public class ClaimJobLogin extends SessionLogin {
+
+	private int jobId;
 }
