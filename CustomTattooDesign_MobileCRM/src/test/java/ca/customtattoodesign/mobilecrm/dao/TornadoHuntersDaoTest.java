@@ -1,171 +1,380 @@
 package ca.customtattoodesign.mobilecrm.dao;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.Assert.*;
 
 import java.sql.SQLException;
+import java.util.List;
 
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.web.server.ResponseStatusException;
 
-import ca.customtattoodesign.mobilecrm.beans.LoginUser;
+import ca.customtattoodesign.mobilecrm.beans.UserLogin;
+import ca.customtattoodesign.mobilecrm.beans.Job;
 import ca.customtattoodesign.mobilecrm.beans.SessionUser;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
 class TornadoHuntersDaoTest {
 
-	@Test
-	public void testIsUserAuthorizedRegular() {
+	private static int capTestId;
+	private static int capTestId2;
+	private static String capTestUser;
+	private static String capTestUser2;
+	private static String capTestPassword;
+	private static String capTestPassword2;
+	private static String capTestSessionToken;
+	private static String capTestSessionToken2;
+	private static int capTestJobId;
+	private static int capTestJobId2;
+	private static int capTestJobExpectedSize;
+	private static int capTestJobExpectedSize2;
+	
+	@BeforeAll
+	public static void fetchEnvironmentVariables() {
+		capTestId = Integer.parseInt(System.getenv("capTestId"));
+		capTestId2 = Integer.parseInt(System.getenv("capTestId2"));
+		capTestUser = System.getenv("capTestUser");
+		capTestUser2 = System.getenv("capTestUser2");
+		capTestPassword = System.getenv("capTestPassword");
+		capTestPassword2 = System.getenv("capTestPassword2");
+		capTestSessionToken = System.getenv("capTestSessionToken");
+		capTestSessionToken2 = System.getenv("capTestSessionToken2");
+		capTestJobId = Integer.parseInt(System.getenv("capTestJobId"));
+		capTestJobId2 = Integer.parseInt(System.getenv("capTestJobId2"));
+		capTestJobExpectedSize = Integer.parseInt(System.getenv("capTestJobExpectedSize"));
+		capTestJobExpectedSize2 = Integer.parseInt(System.getenv("capTestJobExpectedSize2"));
+	}
+	
+	@AfterAll
+	public static void afterAll() {
 		
-		String username = System.getenv("capTestUser");
-		String password = System.getenv("capTestPassword");
-		LoginUser user = LoginUser.builder().username(username).password(password).build();
-		
-		boolean isValid = false;
-		TornadoHuntersDao dao = null;
-		
-		try {
-			dao = TornadoHuntersDao.getInstance();
-			isValid = dao.isUserAuthorized(user);
-		}
-		catch (SQLException | ClassNotFoundException e) {}
-		
-		assertTrue("User was not validated correctly...", isValid == true);
+	}
+	
+	@BeforeEach
+	public void setSessionToken() throws SQLException{
+		TornadoHuntersDao.getInstance().setUserSessionToken(capTestId, capTestSessionToken);
+		TornadoHuntersDao.getInstance().setUserSessionToken(capTestId2, capTestSessionToken2);
+	}
+	
+	@AfterEach
+	public void removeSessionToken() throws SQLException{
+		TornadoHuntersDao.getInstance().removeSessionToken(capTestId, capTestSessionToken);
+		TornadoHuntersDao.getInstance().removeSessionToken(capTestId2, capTestSessionToken2);
 	}
 	
 	@Test
-	public void testIsUserAuthorizedBoundaryIn() {
-		String username = System.getenv("capTestUser2");
-		String password = System.getenv("capTestPassword2");
-		LoginUser user = LoginUser.builder().username(username).password(password).build();
+	public void testIsUserLoginAuthorizedRegular() throws SQLException {
+		String username = capTestUser;
+		String password = capTestPassword;
+		UserLogin user = UserLogin.builder().username(username).password(password).build();
 		
-		boolean isValid = false;
-		TornadoHuntersDao dao = null;
+		boolean isValid = TornadoHuntersDao.getInstance().isUserLoginAuthorized(user.getUsername(), user.getPassword());
 		
-		try {
-			dao = TornadoHuntersDao.getInstance();
-			isValid = dao.isUserAuthorized(user);
-		}
-		catch (SQLException | ClassNotFoundException e) {}
-		
-		assertTrue("User was not validated correctly...", isValid == true);
+		assertTrue("User was not validated correctly...", isValid);
 	}
 	
 	@Test
-	public void testIsUserAuthorizedBoundaryOut() {
-		String username = System.getenv("capTestUser");
-		String password = System.getenv("capTestPassword")+"0";
-		LoginUser user = LoginUser.builder().username(username).password(password).build();
+	public void testIsUserLoginAuthorizedBoundaryIn() throws SQLException {
+		String username = capTestUser2;
+		String password = capTestPassword2;
+		UserLogin user = UserLogin.builder().username(username).password(password).build();
 		
-		boolean isValid = false;
-		TornadoHuntersDao dao = null;
-		
-		try {
-			dao = TornadoHuntersDao.getInstance();
-			isValid = dao.isUserAuthorized(user);
-		}
-		catch (SQLException | ClassNotFoundException e) {}
-		
-		assertFalse("User was not validated correctly...", isValid == true);
+		boolean isValid = TornadoHuntersDao.getInstance().isUserLoginAuthorized(user.getUsername(), user.getPassword());
+
+		assertTrue("User was not validated correctly...", isValid);
 	}
 	
 	@Test
-	public void testIsUserAuthorizedException() {
+	public void testIsUserLoginAuthorizedBoundaryOut() throws SQLException {
+		String username = capTestUser;
+		String password = capTestPassword + "0";
+		UserLogin user = UserLogin.builder().username(username).password(password).build();
+		
+		boolean isValid = TornadoHuntersDao.getInstance().isUserLoginAuthorized(user.getUsername(), user.getPassword());
+
+		assertFalse("User was not validated correctly...", isValid);
+	}
+	
+	@Test
+	public void testIsUserLoginAuthorizedException() throws SQLException {
 		String username = null;
-		String password = System.getenv("capTestPassword")+"0";
-		LoginUser user = LoginUser.builder().username(username).password(password).build();
+		String password = capTestPassword + "0";
+		UserLogin user = UserLogin.builder().username(username).password(password).build();
 		
-		boolean isValid = false;
-		TornadoHuntersDao dao = null;
-		
-		try {
-			dao = TornadoHuntersDao.getInstance();
-			isValid = dao.isUserAuthorized(user);
-		}
-		catch (SQLException | ClassNotFoundException e) {}
-		
-		assertFalse("User was not validated correctly...", isValid == true);
+		boolean isValid = TornadoHuntersDao.getInstance().isUserLoginAuthorized(user.getUsername(), user.getPassword());
+	
+		assertFalse("User was not validated correctly...", isValid);
 	}
 	
 	@Test
-	public void testSetUserSessionTokenRegular() {
-		String username = System.getenv("capTestUser");
-		String password = System.getenv("capTestPassword");
+	public void testIsSessionLoginAuthorizedRegular() throws SQLException {
 		
-		String testSessionToken = "thisisatesttoken12notreal123butifitwasrealthatwouldbeinteresting";
-		LoginUser user = LoginUser.builder().username(username).password(password).build();
+		String username = capTestUser;
+		String sessionToken = capTestSessionToken;
 		
-		TornadoHuntersDao dao = null;
-		boolean wasSettingUserTokenSuccessful = false;
+		boolean isSessionAuthorized = TornadoHuntersDao.getInstance()
+				.isSessionLoginAuthorized(username, sessionToken);
 		
-		try {
-			dao = TornadoHuntersDao.getInstance();
-			wasSettingUserTokenSuccessful = dao.setUserSessionToken(user, testSessionToken);
-		}
-		catch (SQLException | ClassNotFoundException e) {}
-		assertTrue("Session token was not updated into the database correctly...", wasSettingUserTokenSuccessful == true);
+		assertTrue("Session token was not authorized when it should have been...", isSessionAuthorized);
 	}
 	
 	@Test
-	public void testSetUserSessionTokenBoundaryIn() {
-		String username = System.getenv("capTestUser2");
-		String password = System.getenv("capTestPassword2");
+	public void testIsSessionLoginAuthorizedBoundaryIn() throws SQLException {
+		String username = capTestUser2;
+		String sessionToken = capTestSessionToken2;
 		
-		String testSessionToken = "thisisatesttoken12notreal123butifitwasrealthatwouldbeinteresting";
-		LoginUser user = LoginUser.builder().username(username).password(password).build();
+		boolean isSessionAuthorized = TornadoHuntersDao.getInstance()
+				.isSessionLoginAuthorized(username, sessionToken);
 		
-		TornadoHuntersDao dao = null;
-		boolean wasSettingUserTokenSuccessful = false;
-		
-		try {
-			dao = TornadoHuntersDao.getInstance();
-			wasSettingUserTokenSuccessful = dao.setUserSessionToken(user, testSessionToken);
-		}
-		catch (SQLException | ClassNotFoundException e) {}
-		assertTrue("Session token was not updated into the database correctly...", wasSettingUserTokenSuccessful == true);
+		assertTrue("Session token was not authorized when it should have been...", isSessionAuthorized);
 	}
 	
 	@Test
-	public void testSetUserSessionTokenBoundaryOut() {
-		String username = System.getenv("capTestUser2");
-		String password = System.getenv("capTestPassword2")+"0";
+	public void testIsSessionLoginAuthorizedBoundaryOut() throws SQLException {
+		String username = capTestUser2;
+		String sessionToken = capTestSessionToken2 + "0";
 		
-		String testSessionToken = "thisisatesttoken12notreal123butifitwasrealthatwouldbeinteresting";
-		LoginUser user = LoginUser.builder().username(username).password(password).build();
+		boolean isSessionAuthorized = TornadoHuntersDao.getInstance()
+				.isSessionLoginAuthorized(username, sessionToken);
 		
-		TornadoHuntersDao dao = null;
-		boolean wasSettingUserTokenSuccessful = false;
-		
-		try {
-			dao = TornadoHuntersDao.getInstance();
-			wasSettingUserTokenSuccessful = dao.setUserSessionToken(user, testSessionToken);
-		}
-		catch (SQLException | ClassNotFoundException e) {}
-		assertFalse("Session token was not updated into the database correctly...", wasSettingUserTokenSuccessful == true);
+		assertFalse("Session token was authorized when it shouldn't have been...", isSessionAuthorized);
 	}
 	
 	@Test
-	public void testSetUserSessionTokenException() {
-		String username = null;
-		String password = System.getenv("capTestPassword2");
+	public void testIsSessionLoginAuthorizedBoundaryException() throws SQLException {
+		String username = capTestUser2;
+		String sessionToken = null;
 		
-		String testSessionToken = "thisisatesttoken12notreal123butifitwasrealthatwouldbeinteresting";
-		LoginUser user = LoginUser.builder().username(username).password(password).build();
+		boolean isSessionAuthorized = TornadoHuntersDao.getInstance()
+				.isSessionLoginAuthorized(username, sessionToken);
 		
-		TornadoHuntersDao dao = null;
-		boolean wasSettingUserTokenSuccessful = false;
+		assertFalse("Session token was authorized when it shouldn't have been...", isSessionAuthorized);
+	}
+	
+	@Test
+	public void testFetchSessionUserFieldsViaLoginRegular() throws SQLException {
+		String username = capTestUser;
+		String password = capTestPassword;
 		
-		try {
-			dao = TornadoHuntersDao.getInstance();
-			wasSettingUserTokenSuccessful = dao.setUserSessionToken(user, testSessionToken);
-		}
-		catch (SQLException | ClassNotFoundException e) {}
-		assertFalse("Session token was not updated into the database correctly...", wasSettingUserTokenSuccessful == true);
+		SessionUser sessionUser = new SessionUser();
+		boolean wasSuccessful = TornadoHuntersDao.getInstance().fetchSessionUserId(sessionUser, username, password);
+		boolean idExists = sessionUser.getId() != 0;
+		
+		assertTrue("SessionUser fields fetching failed...", wasSuccessful && idExists);
+	}
+	
+	@Test
+	public void testFetchSessionUserFieldsViaLoginBoundaryIn() throws SQLException {
+		String username = capTestUser2;
+		String password = capTestPassword2;
+		
+		SessionUser sessionUser = new SessionUser();
+		boolean wasSuccessful = TornadoHuntersDao.getInstance().fetchSessionUserId(sessionUser, username, password);
+		boolean idExists = sessionUser.getId() != 0;
+		
+		assertTrue("SessionUser fields fetching failed...", wasSuccessful && idExists);
+	}
+	
+	@Test
+	public void testFetchSessionUserFieldsViaLoginBoundaryOut() throws SQLException {
+		String username = capTestUser2;
+		String password = capTestPassword2 + "0";
+		
+		SessionUser sessionUser = new SessionUser();
+		boolean wasSuccessful = TornadoHuntersDao.getInstance().fetchSessionUserId(sessionUser, username, password);
+		boolean idExists = sessionUser.getId() != 0;
+		
+		assertFalse("SessionUser fields fetching failed...", wasSuccessful && idExists);
+	}
+	
+	@Test
+	public void testFetchSessionUserFieldsViaLoginException() throws SQLException {
+		String username = capTestUser2;
+		String password = null;
+		
+		SessionUser sessionUser = new SessionUser();
+		boolean wasSuccessful = TornadoHuntersDao.getInstance().fetchSessionUserId(sessionUser, username, password);
+		boolean idExists = sessionUser.getId() != 0;
+		
+		assertFalse("SessionUser fields fetching failed...", wasSuccessful && idExists);
+	}
+	
+	@Test
+	public void testFetchSessionUserFieldsRegular() throws SQLException {
+		String username = capTestUser;
+		String sessionToken = capTestSessionToken;
+		
+		SessionUser sessionUser = new SessionUser();
+		boolean wasSuccessful = TornadoHuntersDao.getInstance().fetchSessionUserFields(sessionUser, username, sessionToken);
+		boolean fieldExists = sessionUser.getFirstName() != null && !"".equals(sessionUser.getFirstName());
+		
+		assertTrue("SessionUser fields fetching failed...", wasSuccessful && fieldExists);
+	}
+	
+	@Test
+	public void testFetchSessionUserFieldsBoundaryIn() throws SQLException {
+		String username = capTestUser2;
+		String sessionToken = capTestSessionToken2;
+		
+		SessionUser sessionUser = new SessionUser();
+		boolean wasSuccessful = TornadoHuntersDao.getInstance().fetchSessionUserFields(sessionUser, username, sessionToken);
+		boolean fieldExists = sessionUser.getFirstName() != null && !"".equals(sessionUser.getFirstName());
+		
+		assertTrue("SessionUser fields fetching failed...", wasSuccessful && fieldExists);
+	}
+	
+	@Test
+	public void testFetchSessionUserFieldsBoundaryOut() throws SQLException {
+		String username = capTestUser2;
+		String sessionToken = capTestSessionToken2 + "0";
+		
+		SessionUser sessionUser = new SessionUser();
+		
+		assertThrows(SQLException.class, () -> {
+			boolean wasSuccessful = TornadoHuntersDao.getInstance().fetchSessionUserFields(sessionUser, username, sessionToken);
+		});
+	}
+	
+	@Test
+	public void testFetchSessionUserFieldsException() throws SQLException {
+		String username = capTestUser2;
+		String sessionToken = null;
+		
+		SessionUser sessionUser = new SessionUser();
+		
+		assertThrows(SQLException.class, () -> {
+			boolean wasSuccessful = TornadoHuntersDao.getInstance().fetchSessionUserFields(sessionUser, username, sessionToken);
+		});
+	}
+	
+	@Test
+	public void testSetUserSessionTokenRegular() throws SQLException {
+		String testSessionToken = capTestSessionToken;
+		
+		boolean wasSettingUserTokenSuccessful = TornadoHuntersDao.getInstance().setUserSessionToken(capTestId, testSessionToken);
+
+		assertTrue("Session token was not updated into the database correctly...", wasSettingUserTokenSuccessful);
+	}
+	
+	@Test
+	public void testSetUserSessionTokenBoundaryIn() throws SQLException {
+		String testSessionToken = capTestSessionToken2;
+
+		boolean wasSettingUserTokenSuccessful = TornadoHuntersDao.getInstance().setUserSessionToken(capTestId2, testSessionToken);
+
+		assertTrue("Session token was not updated into the database correctly...", wasSettingUserTokenSuccessful);
+	}
+	
+	@Test
+	public void testSetUserSessionTokenBoundaryOut() throws SQLException {	
+		String testSessionToken = capTestSessionToken2;
+
+		assertThrows(SQLException.class, () -> {
+			boolean wasSettingUserTokenSuccessful = TornadoHuntersDao.getInstance().setUserSessionToken(0, testSessionToken);
+		});
+	}
+	
+	@Test
+	public void testSetUserSessionTokenException() throws SQLException {
+		String testSessionToken = null;
+
+		assertThrows(SQLException.class, () -> {
+			boolean wasSettingUserTokenSuccessful = TornadoHuntersDao.getInstance().setUserSessionToken(-100, testSessionToken);
+		});
+	}
+	
+	@Test
+	public void testFetchUnclaimedJobsRegular() throws SQLException {
+		List<Job> jobs = TornadoHuntersDao.getInstance().fetchUnclaimedJobs();
+		
+		assertTrue("Unclaimed jobs list was null...", jobs != null);
+	}
+	
+	@Test
+	public void testFetchArtistJobsRegular() throws SQLException {
+		String username = capTestUser;
+		String sessionToken = capTestSessionToken;
+		
+		List<Job> jobs = TornadoHuntersDao.getInstance().fetchArtistJobs(username, sessionToken);
+		
+		assertTrue("User did not have the expected amount of jobs...", jobs.size() == capTestJobExpectedSize);
+	}
+	
+	@Test
+	public void testFetchArtistJobsBoundaryIn() throws SQLException {
+		String username = capTestUser2;
+		String sessionToken = capTestSessionToken2;
+		
+		List<Job> jobs = TornadoHuntersDao.getInstance().fetchArtistJobs(username, sessionToken);
+		
+		assertTrue("User did not have the expected amount of jobs...", jobs.size() == capTestJobExpectedSize2);
+	}
+	
+	@Test
+	public void testFetchArtistJobsBoundaryOut() throws SQLException {
+		String username = capTestUser2;
+		String sessionToken = capTestSessionToken2 + "0";
+		
+		assertThrows(SQLException.class, () -> {
+			List<Job> jobs = TornadoHuntersDao.getInstance().fetchArtistJobs(username, sessionToken);
+		});
+	}
+	
+	@Test
+	public void testFetchArtistJobsException() throws SQLException {
+		String username = capTestUser2;
+		String sessionToken = null;
+
+		assertThrows(SQLException.class, () -> {
+			List<Job> jobs = TornadoHuntersDao.getInstance().fetchArtistJobs(username, sessionToken);
+		});
+	}
+	
+	@Test
+	public void testClaimJobRegular() throws SQLException {
+		String username = capTestUser;
+		String sessionToken = capTestSessionToken;
+		int jobId = capTestJobId;
+		
+		boolean wasSuccessful = TornadoHuntersDao.getInstance().claimJob(jobId, username, sessionToken);
+	}
+	
+	@Test
+	public void testClaimJobException() throws SQLException {
+		String username = capTestUser;
+		String sessionToken = capTestSessionToken + "0";
+		int jobId = capTestJobId;
+		
+		assertThrows(SQLException.class, () -> {
+			boolean wasSuccessful = TornadoHuntersDao.getInstance().claimJob(jobId, username, sessionToken);
+		});
+	}
+	
+	@Test
+	public void testRemoveSessionTokenRegular() throws SQLException {
+		int userId = capTestId;
+		String sessionToken = capTestSessionToken;
+		
+		boolean successfullyRemoved = TornadoHuntersDao.getInstance().removeSessionToken(userId, sessionToken);
+		
+		assertTrue("Session token was not deleted when it was supposed to be...", successfullyRemoved);
+	}
+	
+	@Test
+	public void testRemoveSessionTokenException() throws SQLException {
+		int userId = capTestId;
+		String sessionToken = null;
+		
+		boolean successfullyRemoved = TornadoHuntersDao.getInstance().removeSessionToken(userId, sessionToken);
+		
+		assertFalse("Session token was deleted when it should not have been...", successfullyRemoved);
+		
 	}
 
 }
