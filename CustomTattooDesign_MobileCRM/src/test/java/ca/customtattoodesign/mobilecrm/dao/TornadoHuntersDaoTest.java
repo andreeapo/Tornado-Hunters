@@ -5,6 +5,7 @@ import static org.junit.Assert.*;
 import java.sql.SQLException;
 import java.util.List;
 
+import org.junit.BeforeClass;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -16,6 +17,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import ca.customtattoodesign.mobilecrm.beans.UserLogin;
 import ca.customtattoodesign.mobilecrm.beans.Job;
+import ca.customtattoodesign.mobilecrm.beans.Message;
 import ca.customtattoodesign.mobilecrm.beans.SessionUser;
 
 @RunWith(SpringRunner.class)
@@ -34,6 +36,8 @@ class TornadoHuntersDaoTest {
 	private static int capTestJobId2;
 	private static int capTestJobExpectedSize;
 	private static int capTestJobExpectedSize2;
+	private static int capTestMessagesExpectedSize;
+	private static int capTestMessagesExpectedSize2;
 	
 	@BeforeAll
 	public static void fetchEnvironmentVariables() {
@@ -49,6 +53,8 @@ class TornadoHuntersDaoTest {
 		capTestJobId2 = Integer.parseInt(System.getenv("capTestJobId2"));
 		capTestJobExpectedSize = Integer.parseInt(System.getenv("capTestJobExpectedSize"));
 		capTestJobExpectedSize2 = Integer.parseInt(System.getenv("capTestJobExpectedSize2"));
+		capTestMessagesExpectedSize = Integer.parseInt(System.getenv("capTestMessagesExpectedSize"));
+		capTestMessagesExpectedSize2 = Integer.parseInt(System.getenv("capTestMessagesExpectedSize2"));
 	}
 	
 	@AfterAll
@@ -375,6 +381,86 @@ class TornadoHuntersDaoTest {
 		
 		assertFalse("Session token was deleted when it should not have been...", successfullyRemoved);
 		
+	}
+	
+	@Test
+	public void testFetchJobMessagesRegular() throws SQLException {
+		int jobId = capTestJobId;
+		
+		List<Message> tempMessages = TornadoHuntersDao.getInstance().fetchJobMessages(jobId);
+		
+		assertTrue("Job did not have the expected amount of messages...", tempMessages.size() == capTestMessagesExpectedSize);
+	}
+	
+	@Test
+	public void testFetchJobMessagesException() throws SQLException {
+		int jobId = -1;
+		
+		List<Message> tempMessages = TornadoHuntersDao.getInstance().fetchJobMessages(jobId);
+		
+		assertTrue("Job did not have the expected amount of messages...", tempMessages.size() == 0);
+	}
+	
+	@Test
+	public void testSendStringMessageRegular() throws SQLException{
+		int jobId = capTestJobId2;
+		String message = "hello world";
+		String sessionToken = "";
+		
+		boolean messageSent = TornadoHuntersDao.getInstance().sendStringMessage(jobId, message, sessionToken);
+		
+		assertTrue("Correct message was unable to be sent...", messageSent);
+	}
+	
+	@Test
+	public void testSendStringMessageBoundaryIn() throws SQLException{
+		int jobId = capTestJobId2;
+		String message = "hello world";
+		String sessionToken = capTestSessionToken2;
+		
+		boolean messageSent = TornadoHuntersDao.getInstance().sendStringMessage(jobId, message, sessionToken);
+		
+		assertTrue("Correct message was unable to be sent...", messageSent);
+	}
+	
+	@Test
+	public void testSendStringMessageBoundaryOut() throws SQLException{
+		int jobId = capTestJobId2;
+		String message = "hello world";
+		String sessionToken = capTestSessionToken2+"1";
+		
+		boolean messageSent = TornadoHuntersDao.getInstance().sendStringMessage(jobId, message, sessionToken);
+		
+		assertFalse("Incorrect message was sent ...", messageSent);
+	}
+	
+	@Test
+	public void testSendStringMessageException() throws SQLException{
+		int jobId = capTestJobId2;
+		String message = null;
+		String sessionToken = null;
+		
+		boolean messageSent = TornadoHuntersDao.getInstance().sendStringMessage(jobId, message, sessionToken);
+		
+		assertFalse("Message that was not supposed to be sent was sent...", messageSent);
+	}
+	
+	@Test
+	public void testFetchUnreadJobMessagesRegular() throws SQLException {
+		int jobId = capTestJobId;
+		
+		List<Message> tempMessages = TornadoHuntersDao.getInstance().fetchUnreadJobMessages(jobId);
+		
+		assertTrue("Job did not have the expected amount of messages...", tempMessages != null);
+	}
+	
+	@Test
+	public void testFetchUnreadJobMessagesException() throws SQLException {
+		int jobId = -1;
+		
+		List<Message> tempMessages = TornadoHuntersDao.getInstance().fetchUnreadJobMessages(jobId);
+		
+		assertTrue("Job did not have the expected amount of messages...", tempMessages.size() == 0);
 	}
 
 }

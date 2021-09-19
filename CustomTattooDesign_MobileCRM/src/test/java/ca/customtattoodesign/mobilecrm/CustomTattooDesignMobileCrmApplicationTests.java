@@ -22,6 +22,8 @@ class CustomTattooDesignMobileCrmApplicationTests {
 		int capTestJobId2 = Integer.parseInt(System.getenv("capTestJobId2"));
 		int capTestJobExpectedSize = Integer.parseInt(System.getenv("capTestJobExpectedSize"));
 		int capTestJobExpectedSize2 = Integer.parseInt(System.getenv("capTestJobExpectedSize2"));
+		int capTestMessagesExpectedSize = Integer.parseInt(System.getenv("capTestMessagesExpectedSize"));
+		int capTestMessagesExpectedSize2 = Integer.parseInt(System.getenv("capTestMessagesExpectedSize2"));
 		
 		String capDBusername = System.getenv("capDBusername");
 		String capDBpassword = System.getenv("capDBpassword");

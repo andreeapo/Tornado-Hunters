@@ -1,5 +1,7 @@
 package ca.customtattoodesign.mobilecrm.beans;
 
+import java.util.List;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -17,6 +19,7 @@ import lombok.NoArgsConstructor;
 public class Job {
 
 	private int jobId;
+	private int artistId;
 	private String state;
 	private String title;
 	private String customerName;
@@ -26,5 +29,6 @@ public class Job {
 	private boolean color;
 	private double commission;
 	private String description;
+	private List<Message> messages;
 	
 }
