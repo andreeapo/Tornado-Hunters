@@ -40,6 +40,8 @@ public class LoginServiceTest {
 	private static int capTestJobId2;
 	private static int capTestJobExpectedSize;
 	private static int capTestJobExpectedSize2;
+	private static int capTestMessagesExpectedSize;
+	private static int capTestMessagesExpectedSize2;
 	
 	@BeforeClass
 	public static void fetchEnvironmentVariables() {
@@ -55,6 +57,8 @@ public class LoginServiceTest {
 		capTestJobId2 = Integer.parseInt(System.getenv("capTestJobId2"));
 		capTestJobExpectedSize = Integer.parseInt(System.getenv("capTestJobExpectedSize"));
 		capTestJobExpectedSize2 = Integer.parseInt(System.getenv("capTestJobExpectedSize2"));
+		capTestMessagesExpectedSize = Integer.parseInt(System.getenv("capTestMessagesExpectedSize"));
+		capTestMessagesExpectedSize2 = Integer.parseInt(System.getenv("capTestMessagesExpectedSize2"));
 	}
 	
 	@AfterClass

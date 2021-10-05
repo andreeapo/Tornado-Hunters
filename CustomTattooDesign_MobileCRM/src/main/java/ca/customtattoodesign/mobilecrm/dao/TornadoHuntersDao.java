@@ -13,6 +13,7 @@ import java.util.Properties;
 
 import ca.customtattoodesign.mobilecrm.beans.UserLogin;
 import ca.customtattoodesign.mobilecrm.beans.Job;
+import ca.customtattoodesign.mobilecrm.beans.Message;
 import ca.customtattoodesign.mobilecrm.beans.User;
 
 /**
@@ -294,11 +295,12 @@ public class TornadoHuntersDao {
 				Statement prep = conn.createStatement()) {
 			
 			ResultSet results = prep.executeQuery(sql);
-			
+				
 			while (results.next()) {
 				
 				Job tempJob = new Job();
 				tempJob.setJobId(results.getInt("id"));
+				tempJob.setArtistId(results.getInt("user_id"));
 				tempJob.setState(results.getString("state"));
 				tempJob.setTitle(results.getString("title"));
 				tempJob.setCustomerName(results.getString("customer"));
@@ -308,6 +310,7 @@ public class TornadoHuntersDao {
 				tempJob.setColor(results.getBoolean("color"));
 				tempJob.setCommission(results.getDouble("commission"));
 				tempJob.setDescription(results.getString("description"));
+				tempJob.setMessages(TornadoHuntersDao.getInstance().fetchJobMessages(results.getInt("id")));
 				jobs.add(tempJob);
 				
 			}
@@ -338,6 +341,7 @@ public class TornadoHuntersDao {
 				
 				Job tempJob = new Job();
 				tempJob.setJobId(results.getInt("id"));
+				tempJob.setArtistId(results.getInt("user_id"));
 				tempJob.setState(results.getString("state"));
 				tempJob.setTitle(results.getString("title"));
 				tempJob.setCustomerName(results.getString("customer"));
@@ -347,6 +351,7 @@ public class TornadoHuntersDao {
 				tempJob.setColor(results.getBoolean("color"));
 				tempJob.setCommission(results.getDouble("commission"));
 				tempJob.setDescription(results.getString("description"));
+				tempJob.setMessages(TornadoHuntersDao.getInstance().fetchJobMessages(results.getInt("id")));
 				jobs.add(tempJob);
 				
 			}
@@ -392,12 +397,13 @@ public class TornadoHuntersDao {
 	 * 
 	 * @param userId the userId of the user whose session token is being deleted
 	 * @param sessionToken the SessionToken that needs to be deleted
+	 * @return {@code true} if the session token was removed successfully<br>
+	 *	       {@code false} if session token removal failed
 	 * @throws SQLException if the connection to the database failed, or if the SQL command(s) within the method failed
 	 */
 	public boolean removeSessionToken(int userId, String sessionToken) throws SQLException {
 		
 		boolean successfullyRemoved = false;
-		
 		String sql = "DELETE FROM session_tokens WHERE user_id = ? AND session_token = ?";
 		
 		try (Connection conn = TornadoHuntersDao.getConnection(); 
@@ -412,5 +418,113 @@ public class TornadoHuntersDao {
 		
 		return successfullyRemoved;
 	}
+	
+	/**
+	 * Fetches all messages for a specified job.
+	 * 
+	 * @param jobId the ID of the job for which we want to fetch messages
+	 * @return A list of messages that are associated with the job id
+	 * @throws SQLException if the connection to the database failed, or if the SQL command(s) within the method failed
+	 */
+	public List<Message> fetchJobMessages(int jobId) throws SQLException{
+		
+		List<Message> jobMessages = new ArrayList<Message>();
+		String sql = "SELECT * FROM fetch_job_messages(?)";
+		
+		try (Connection conn = TornadoHuntersDao.getConnection(); 
+				PreparedStatement prep = conn.prepareStatement(sql)) {
+			
+			prep.setInt(1, jobId);
+			ResultSet results = prep.executeQuery();
+			
+			while (results.next()) {
+				
+				Message tempMessage = new Message();
+				tempMessage.setMessageId(results.getInt("id"));
+				tempMessage.setDesignId(results.getInt("design_id"));
+				tempMessage.setDesignerId(results.getInt("designer_id"));
+				tempMessage.setRead(results.getBoolean("has_been_read"));
+				tempMessage.setCreatedAt(results.getTimestamp("created_at"));
+				tempMessage.setBody(results.getString("body"));
+				tempMessage.setCommentPicture(results.getString("comment_picture"));
+				tempMessage.setJobId(results.getInt("job_id"));
+				jobMessages.add(tempMessage);
+			
+			}
+		}
+		
+		return jobMessages;
+	}
+	
+	/**
+	 * Sends a String message to a job conversation and returns if the message was sent successfully.
+	 * 
+	 * @param jobId the ID of the job to which to send the message to
+	 * @param stringMessage the text of the message that is being sent
+	 * @param sessionToken a sessionToken to verify if the artist or the customer are sending the message
+	 * @return {@code true} if the String message was sent successfully<br>
+	 *	       {@code false} if sending the String message failed
+	 * @throws SQLException if the connection to the database failed, or if the SQL command(s) within the method failed
+	 */
+	public boolean sendStringMessage(int jobId, String stringMessage, String sessionToken) throws SQLException{
+		
+		boolean successfullySent = false;
+		String sql = "SELECT send_string_message (?, ?, ?)";
+				
+		try (Connection conn = TornadoHuntersDao.getConnection(); 
+				PreparedStatement prep = conn.prepareStatement(sql)) {
+			
+			prep.setInt(1, jobId);
+			prep.setString(2, stringMessage);
+			prep.setString(3, sessionToken);
+			
+			ResultSet results = prep.executeQuery();
+		
+			
+			if (results.next()) {
+				successfullySent = results.getBoolean("send_string_message");
+			}	
+		}
+		
+		return successfullySent;
+	}
+	
+	/**
+	 * Fetches all messages for a specified job that have not yet been read by the other party.
+	 * 
+	 * @param jobId the ID of the job for which we want to fetch messages
+	 * @return A list of unread messages that are associated with the job id
+	 * @throws SQLException if the connection to the database failed, or if the SQL command(s) within the method failed
+	 */
+	public List<Message> fetchUnreadJobMessages(int jobId) throws SQLException{
+		
+		List<Message> jobMessages = new ArrayList<Message>();
+		String sql = "SELECT * FROM fetch_unread_job_messages(?)";
+		
+		try (Connection conn = TornadoHuntersDao.getConnection(); 
+				PreparedStatement prep = conn.prepareStatement(sql)) {
+			
+			prep.setInt(1, jobId);
+			ResultSet results = prep.executeQuery();
+			
+			while (results.next()) {
+				
+				Message tempMessage = new Message();
+				tempMessage.setMessageId(results.getInt("id"));
+				tempMessage.setDesignId(results.getInt("design_id"));
+				tempMessage.setDesignerId(results.getInt("designer_id"));
+				tempMessage.setRead(results.getBoolean("has_been_read"));
+				tempMessage.setCreatedAt(results.getTimestamp("created_at"));
+				tempMessage.setBody(results.getString("body"));
+				tempMessage.setCommentPicture(results.getString("comment_picture"));
+				tempMessage.setJobId(results.getInt("job_id"));
+				jobMessages.add(tempMessage);
+			
+			}
+		}
+		
+		return jobMessages;
+	}
+	
 
 }

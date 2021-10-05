@@ -20,9 +20,12 @@ import org.springframework.web.server.ResponseStatusException;
 
 import ca.customtattoodesign.mobilecrm.beans.UserLogin;
 import ca.customtattoodesign.mobilecrm.beans.ClaimJobLogin;
+import ca.customtattoodesign.mobilecrm.beans.ConversationLogin;
 import ca.customtattoodesign.mobilecrm.beans.Job;
+import ca.customtattoodesign.mobilecrm.beans.Message;
 import ca.customtattoodesign.mobilecrm.beans.SessionLogin;
 import ca.customtattoodesign.mobilecrm.beans.SessionUser;
+import ca.customtattoodesign.mobilecrm.services.ConversationService;
 import ca.customtattoodesign.mobilecrm.services.JobService;
 import ca.customtattoodesign.mobilecrm.services.LoginService;
 
@@ -43,6 +46,9 @@ public class RestController {
 	
 	@Autowired
 	private JobService jobService;
+	
+	@Autowired
+	private ConversationService conversationService;
 
 	/**
 	 * Authenticates the credentials of the user and returns an object with info on whether or not the user is 
@@ -120,7 +126,7 @@ public class RestController {
 	 * Claims a job for an artist, and returns if claiming the job was successful.
 	 * 
 	 * @param claimJobLogin object containing session information and the job id the user wants to claim
-	 * @return {@code true} {@code true} if the claim was successful<br>
+	 * @return {@code true} if the claim was successful<br>
 	 *	       {@code false} if the claim failed
 	 * @throws ResponseStatusException gives details on which type of exception was thrown internally and why
 	 */
@@ -138,6 +144,62 @@ public class RestController {
 		}
 		return claimSuccessful;
 
+	}
+	
+	/**
+	 * Fetches all messages related to a specific job id.
+	 * 
+	 * @param Conversation login object which contains login and conversation info, 
+	 * 		in this use case the jobId from the conversation is used while the other fields can contain default values
+	 * @return {@code List of Message} which are associated with the job id in the ConversationLogin.
+	 * @throws ResponseStatusException gives details on which type of exception was thrown internally and why
+	 */
+	@PostMapping("/fetchJobMessages")
+	public List<Message> fetchJobMessages(HttpServletRequest request, @RequestBody @NonNull ConversationLogin convoLogin) {
+		
+		LOGGER.info("Caller Address: '{}', Api Call Made: '{}'", request.getRemoteHost(), request.getServletPath());
+		
+		return conversationService.fetchJobMessages(convoLogin);
+	}
+	
+	/**
+	 * Fetches unread messages related to a specific job id.
+	 * 
+	 * @param Conversation login object which contains login and conversation info,
+	 * 		in this use case the jobId from the conversation is used while the other fields can contain default values
+	 * @return {@code List of Message} which are associated with the job id in the ConversationLogin.
+	 * @throws ResponseStatusException gives details on which type of exception was thrown internally and why
+	 */
+	@PostMapping("/fetchUnreadJobMessages")
+	public List<Message> fetchUnreadJobMessages(HttpServletRequest request, @RequestBody @NonNull ConversationLogin convoLogin) {
+		
+		LOGGER.info("Caller Address: '{}', Api Call Made: '{}'", request.getRemoteHost(), request.getServletPath());
+		
+		return conversationService.fetchUnreadJobMessages(convoLogin);
+	}
+	
+	/**
+	 * Sends a text (String) message to a chat within a job based on the jobId
+	 * 
+	 * @param Conversation login object which contains login and conversation info, 
+	 * 		using jobId, sessionToken and body fields while the other fields can contain default values
+	 * @return {@code true} if the string message within the conversation login object was sent successfully<br>
+	 *	       {@code false} if the string message was not sent
+	 * @throws ResponseStatusException gives details on which type of exception was thrown internally and why
+	 */
+	@PostMapping("/sendStringMessage")
+	public boolean sendStringMessage(HttpServletRequest request, @RequestBody @NonNull ConversationLogin convoLogin) {
+		
+		LOGGER.info("Caller Address: '{}', Api Call Made: '{}'", request.getRemoteHost(), request.getServletPath());
+		boolean sentSuccessfully = false;
+		
+		if (convoLogin.getSessionToken() != null) {
+			sentSuccessfully = conversationService.sendStringMessage(convoLogin);
+		}
+		else {
+			throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User is not authorized to make this request...");
+		}
+		return sentSuccessfully;
 	}
 	
 	/**
