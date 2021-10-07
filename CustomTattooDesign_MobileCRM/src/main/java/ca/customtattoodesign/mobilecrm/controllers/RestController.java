@@ -201,6 +201,39 @@ public class RestController {
 		}
 		return sentSuccessfully;
 	}
+
+
+
+
+
+
+
+
+
+
+
+
+	/**
+	 * Pulls the job for a customer given a public access token
+	 *
+	 * @param jobAccessToken unique public token given to the customer to access their jobs
+	 * @return {@code List of jobs} which have the same access token
+	 * @throws ResponseStatusException gives details on which type of exception was thrown internally and why
+	 */
+	@PostMapping("/getJobAsCustomer")
+	public Job getJobAsCustomer(HttpServletRequest request, @RequestBody @NonNull String jobAccessToken) {
+
+		LOGGER.info("Caller Address: '{}', Api Call Made: '{}'", request.getRemoteHost(), request.getServletPath());
+		boolean sentSuccessfully = false;
+
+		return jobService.fetchCustomerJob(jobAccessToken);
+	}
+
+
+
+
+
+
 	
 	/**
 	 * A simple method that runs "Pong!", this method can be used for testing if the API is online.

@@ -11,10 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-import ca.customtattoodesign.mobilecrm.beans.UserLogin;
-import ca.customtattoodesign.mobilecrm.beans.Job;
-import ca.customtattoodesign.mobilecrm.beans.Message;
-import ca.customtattoodesign.mobilecrm.beans.User;
+import ca.customtattoodesign.mobilecrm.beans.*;
 
 /**
  * The {@code TornadoHuntersDao} class is a singleton data access class for 
@@ -525,6 +522,45 @@ public class TornadoHuntersDao {
 		
 		return jobMessages;
 	}
-	
 
+	/**
+	 *
+	 * @param jobAccessToken unique public token given to the customer to access their jobs
+	 * @return {@code List of jobs} which have the same access token
+	 * @throws SQLException
+	 */
+	public Job fetchCustomerJob(String jobAccessToken) throws SQLException {
+
+		Job job = null;
+		String sql = "SELECT * FROM customer_access(?)";
+
+		try(Connection conn = TornadoHuntersDao.getConnection();
+				PreparedStatement prep = conn.prepareStatement(sql)) {
+
+			prep.setString(1, jobAccessToken);
+			ResultSet results = prep.executeQuery();
+
+			if(results.next()){
+				job = new Job();
+				job.setJobId(results.getInt("id"));
+				job.setArtistId(results.getInt("user_id"));
+				job.setState(results.getString("state"));
+				job.setTitle(results.getString("title"));
+				job.setCustomerName(results.getString("customer"));
+				job.setTattooLocation(results.getString("tattoo_position"));
+				job.setTattooType(results.getString("size"));
+				job.setTattooStyle(results.getString("style"));
+				job.setColor(results.getBoolean("color"));
+				job.setCommission(results.getDouble("commission"));
+				job.setDescription(results.getString("description"));
+				job.setMessages(TornadoHuntersDao.getInstance().fetchJobMessages(results.getInt("id")));
+			}
+
+
+
+		}
+
+		return job;
+
+	}
 }

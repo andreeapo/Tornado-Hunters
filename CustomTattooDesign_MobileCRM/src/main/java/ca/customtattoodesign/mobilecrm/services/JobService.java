@@ -3,6 +3,7 @@ package ca.customtattoodesign.mobilecrm.services;
 import java.sql.SQLException;
 import java.util.List;
 
+import ca.customtattoodesign.mobilecrm.beans.ConversationLogin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -142,5 +143,31 @@ public class JobService {
 	public boolean isJobIdValid(int jobId) {
 		return jobId > 0;
 	}
-	
+
+
+	/**
+	 * Returns a list of jobs for the customer's unique ID
+	 *
+	 * @param jobAccessToken unique public token given to the customer to access their jobs
+	 * @return {@code List of jobs} which have the same access token
+	 */
+    public Job fetchCustomerJob(String jobAccessToken) {
+		Job job = null;
+
+		try{
+			job = TornadoHuntersDao.getInstance().fetchCustomerJob(jobAccessToken);
+		}catch (SQLException e) {
+			if (e.getMessage().contains("ERROR: Not Authorized")) {
+				throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid username or session token...");
+			}
+			else {
+				LOGGER.error(e.getMessage());
+				throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Database connection failed...");
+			}
+		}
+
+		return job;
+
+    }
+
 }

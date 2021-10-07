@@ -42,6 +42,11 @@ public class JobServiceTest {
 	private static int capTestJobExpectedSize2;
 	private static int capTestMessagesExpectedSize;
 	private static int capTestMessagesExpectedSize2;
+
+	private static String capTestJobAccessToken1;
+	private static int capTestJobAccessTokenExpectedSize1;
+	private static String capTestJobAccessToken2;
+	private static int capTestJobAccessTokenExpectedSize2;
 	
 	@BeforeClass
 	public static void fetchEnvironmentVariables() {
@@ -59,6 +64,11 @@ public class JobServiceTest {
 		capTestJobExpectedSize2 = Integer.parseInt(System.getenv("capTestJobExpectedSize2"));
 		capTestMessagesExpectedSize = Integer.parseInt(System.getenv("capTestMessagesExpectedSize"));
 		capTestMessagesExpectedSize2 = Integer.parseInt(System.getenv("capTestMessagesExpectedSize2"));
+
+		capTestJobAccessToken1 = "mAzADzDyHXY9nibXOOlZVrpxb20pndgPFxGWnUIcMzYs5Gf8t9";
+		capTestJobAccessTokenExpectedSize1 = 1;
+		capTestJobAccessToken2 = "HL6Rvknt6ofXsuzA2S2dUgdsTIBnMba6jGM6tD13";
+		capTestJobAccessTokenExpectedSize2 = 1;
 	}
 	
 	@AfterClass
@@ -195,5 +205,48 @@ public class JobServiceTest {
 		
 		assertFalse("Job id was valid when it is invalid...", isValidId);
 	}
+
+
+
+	@Test
+	public void testFetchCustomerJobRegular(){
+
+		String accessToken = capTestJobAccessToken1;
+
+		Job job = jobService.fetchCustomerJob(accessToken);
+
+		assertNotNull("Customer did not have any jobs", job);
+	}
+
+	@Test
+	public void testFetchCustomerJobBoundaryIn() {
+
+
+		String accessToken = capTestJobAccessToken2;
+
+		Job job = jobService.fetchCustomerJob(accessToken);
+
+		assertNotNull("Customer did not have any jobs", job);
+	}
+
+	@Test
+	public void testFetchCustomerJobBoundaryOut(){
+		String accessToken = capTestJobAccessToken1 + "0";
+
+		Job job = jobService.fetchCustomerJob(accessToken);
+
+		assertNull("Jobs returned false", job);
+	}
+
+	@Test
+	public void testFetchCustomerJobException(){
+		String accessToken = null;
+
+		Job job = jobService.fetchCustomerJob(accessToken);
+
+		assertNull("Jobs returned false", job);
+	}
+
+
 
 }
