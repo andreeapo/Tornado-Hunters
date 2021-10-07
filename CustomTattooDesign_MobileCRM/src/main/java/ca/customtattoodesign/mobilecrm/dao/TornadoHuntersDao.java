@@ -19,6 +19,7 @@ import ca.customtattoodesign.mobilecrm.beans.*;
  * 		happen within this class.
  * 
  * @author Roman Krutikov
+ * @co-author Thomas Chapman
  *
  */
 public class TornadoHuntersDao {
@@ -527,7 +528,7 @@ public class TornadoHuntersDao {
 	 *
 	 * @param jobAccessToken unique public token given to the customer to access their jobs
 	 * @return {@code List of jobs} which have the same access token
-	 * @throws SQLException
+	 * @throws SQLException if the connection to the database failed, or if the SQL command(s) within the method failed
 	 */
 	public Job fetchCustomerJob(String jobAccessToken) throws SQLException {
 

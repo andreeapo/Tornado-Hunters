@@ -20,7 +20,7 @@ import ca.customtattoodesign.mobilecrm.dao.TornadoHuntersDao;
  * 		acts as a middle-man between the RESTful API and the Database.
  * 
  * @author Roman Krutikov
- *
+ * @co-author Thomas Chapman
  */
 @Service
 public class JobService {
@@ -146,17 +146,18 @@ public class JobService {
 
 
 	/**
-	 * Returns a list of jobs for the customer's unique ID
+	 * Returns the job for the customer's unique ID
 	 *
 	 * @param jobAccessToken unique public token given to the customer to access their jobs
-	 * @return {@code List of jobs} which have the same access token
+	 * @return {@code job} with the access token
 	 */
     public Job fetchCustomerJob(String jobAccessToken) {
-		Job job = null;
+		Job job;
 
 		try{
 			job = TornadoHuntersDao.getInstance().fetchCustomerJob(jobAccessToken);
-		}catch (SQLException e) {
+		}
+		catch (SQLException e) {
 			if (e.getMessage().contains("ERROR: Not Authorized")) {
 				throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid username or session token...");
 			}

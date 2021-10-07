@@ -33,6 +33,7 @@ import ca.customtattoodesign.mobilecrm.services.LoginService;
  * The {@code RestController} class is used for handling RESTful API requests.
  * 
  * @author Roman Krutikov
+ * @co-author Thomas Chapman
  */
 @RequestMapping("api")
 @org.springframework.web.bind.annotation.RestController
@@ -217,14 +218,13 @@ public class RestController {
 	 * Pulls the job for a customer given a public access token
 	 *
 	 * @param jobAccessToken unique public token given to the customer to access their jobs
-	 * @return {@code List of jobs} which have the same access token
+	 * @return {@code job} with the access token
 	 * @throws ResponseStatusException gives details on which type of exception was thrown internally and why
 	 */
 	@PostMapping("/getJobAsCustomer")
 	public Job getJobAsCustomer(HttpServletRequest request, @RequestBody @NonNull String jobAccessToken) {
 
 		LOGGER.info("Caller Address: '{}', Api Call Made: '{}'", request.getRemoteHost(), request.getServletPath());
-		boolean sentSuccessfully = false;
 
 		return jobService.fetchCustomerJob(jobAccessToken);
 	}
