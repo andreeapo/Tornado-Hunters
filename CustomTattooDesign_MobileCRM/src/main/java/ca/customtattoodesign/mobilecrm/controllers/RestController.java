@@ -1,8 +1,16 @@
 package ca.customtattoodesign.mobilecrm.controllers;
 
+import java.io.UnsupportedEncodingException;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -13,14 +21,19 @@ import org.springframework.http.HttpStatus;
 import org.springframework.lang.NonNull;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 import ca.customtattoodesign.mobilecrm.beans.UserLogin;
+import ca.customtattoodesign.mobilecrm.beans.BasicJob;
 import ca.customtattoodesign.mobilecrm.beans.ClaimJobLogin;
 import ca.customtattoodesign.mobilecrm.beans.ConversationLogin;
+import ca.customtattoodesign.mobilecrm.beans.DesignRequest;
 import ca.customtattoodesign.mobilecrm.beans.Job;
 import ca.customtattoodesign.mobilecrm.beans.Message;
 import ca.customtattoodesign.mobilecrm.beans.SessionLogin;
@@ -200,6 +213,51 @@ public class RestController {
 			throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User is not authorized to make this request...");
 		}
 		return sentSuccessfully;
+	}
+	
+	/**
+	 * Receives a tattoo design request and returns a BasicJob object with job information if submission of the job request
+	 * 		was successful.
+	 * 
+	 * @param image1 an optional MultipartFile image that is used if images are uploaded with the design request
+	 * @param image2 an optional MultipartFile image that is used if images are uploaded with the design request
+	 * @param image3 an optional MultipartFile image that is used if images are uploaded with the design request
+	 * @param image4 an optional MultipartFile image that is used if images are uploaded with the design request
+	 * @param image5 an optional MultipartFile image that is used if images are uploaded with the design request
+	 * @param image6 an optional MultipartFile image that is used if images are uploaded with the design request
+	 * @param designSubmission is the object that holds all the relevant info about a design request when it is 
+	 * 		submitted to the API.
+	 * @return BasicJob object which holds the jobId and jobAccessToken
+	 * @throws ResponseStatusException gives details on which type of exception was thrown internally and why
+	 */
+	@PostMapping("/submitDesignRequest")
+	public BasicJob submitDesignRequest(HttpServletRequest request, @RequestParam("image1") Optional<MultipartFile> image1, 
+			@RequestParam("image2") Optional<MultipartFile> image2, @RequestParam("image3") Optional<MultipartFile> image3, 
+			@RequestParam("image4") Optional<MultipartFile> image4, @RequestParam("image5") Optional<MultipartFile> image5, 
+			@RequestParam("image6") Optional<MultipartFile> image6, @ModelAttribute DesignRequest designSubmission) {
+		
+		LOGGER.info("Caller Address: '{}', Api Call Made: '{}'", request.getRemoteHost(), request.getServletPath());
+		
+		ArrayList<MultipartFile> images = new ArrayList<MultipartFile>();
+		if (image1.isPresent()) { images.add(image1.get()); }
+		if (image2.isPresent()) { images.add(image2.get()); }
+		if (image3.isPresent()) { images.add(image3.get()); }
+		if (image4.isPresent()) { images.add(image4.get()); }
+		if (image5.isPresent()) { images.add(image5.get()); }
+		if (image6.isPresent()) { images.add(image6.get()); }
+		return jobService.sendJobDesignRequest(designSubmission, (MultipartFile[])images.toArray());
+	}
+	
+	// Test method to be removed...
+	@PostMapping("/encodeJobId")
+	public String getEncodedJobId(@RequestParam("decodedJobId") int jobId) throws NoSuchMethodException, InvalidKeyException, IllegalArgumentException, UnsupportedEncodingException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidAlgorithmParameterException, IllegalBlockSizeException, BadPaddingException {
+		return jobService.getJobAccessTokenFromJobId(jobId);
+	}
+	
+	// Test method to be removed...
+	@PostMapping("/decodeJobId")
+	public int getEncodedJobId(@RequestParam("encodedJobId") String encodedJobId) throws NoSuchMethodException, InvalidKeyException, IllegalArgumentException, UnsupportedEncodingException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidAlgorithmParameterException, IllegalBlockSizeException, BadPaddingException {
+		return jobService.getJobIdFromJobAccessToken(encodedJobId);
 	}
 	
 	/**

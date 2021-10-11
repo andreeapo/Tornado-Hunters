@@ -6,19 +6,19 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
 /**
- * The {@code Job} class is used to hold information about jobs.
+ * The {@code Job} class is used to hold detailed information about jobs.
  * 
  * @author Roman Krutikov
  */
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-@Builder
-public class Job {
+@SuperBuilder
+public class Job extends BasicJob{
 
-	private int jobId;
 	private int artistId;
 	private String state;
 	private String title;
@@ -30,5 +30,5 @@ public class Job {
 	private double commission;
 	private String description;
 	private List<Message> messages;
-	
+	private List<Design> designs;
 }
