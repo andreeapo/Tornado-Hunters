@@ -570,7 +570,7 @@ public class TornadoHuntersDao {
 			prep.setBoolean(5, designRequest.isFirstTattoo());
 			prep.setBoolean(6, designRequest.isColor());
 			prep.setBoolean(7, designRequest.isCoverExistingTattoo());
-			prep.setString(8, designRequest.getIdentifyAs());
+			prep.setString(8, designRequest.getStyleOfTattoo());
 			prep.setString(9, designRequest.getEstimateSize());
 			prep.setString(10, designRequest.getDescription());
 			prep.setString(11, designRequest.getPosition());
