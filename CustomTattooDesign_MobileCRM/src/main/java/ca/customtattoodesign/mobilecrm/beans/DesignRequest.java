@@ -27,5 +27,6 @@ public class DesignRequest {
 	private String styleOfTattoo;
 	private String estimateSize;
 	private String description;
+	private String position;
 	
 }

@@ -559,7 +559,7 @@ public class TornadoHuntersDao {
 	public int submitDesignRequest(DesignRequest designRequest) throws SQLException {
 		int newJobId = -1;
 
-		String sql = "SELECT submit_design_request(?,?,?,?,?,?,?,?,?,?)";
+		String sql = "SELECT submit_design_request(?,?,?,?,?,?,?,?,?,?,?)";
 
 		try (Connection conn = TornadoHuntersDao.getConnection(); PreparedStatement prep = conn.prepareStatement(sql)) {
 
@@ -573,6 +573,7 @@ public class TornadoHuntersDao {
 			prep.setString(8, designRequest.getIdentifyAs());
 			prep.setString(9, designRequest.getEstimateSize());
 			prep.setString(10, designRequest.getDescription());
+			prep.setString(11, designRequest.getPosition());
 
 			ResultSet results = prep.executeQuery();
 
