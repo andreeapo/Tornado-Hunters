@@ -378,20 +378,25 @@ public class JobService {
 	 * @param jobAccessToken unique public token given to the customer to access their jobs
 	 * @return {@code job} with the access token
 	 */
-    public Job fetchCustomerJob(String jobAccessToken) {
+    public Job fetchCustomerJob(BasicJob bJob) {
 		Job job;
 
 		try{
-			job = TornadoHuntersDao.getInstance().fetchCustomerJob(jobAccessToken);
+
+			int id = getJobIdFromJobAccessToken(bJob.getJobAccessToken());
+			job = TornadoHuntersDao.getInstance().fetchCustomerJob(id);
 		}
-		catch (SQLException e) {
-			if (e.getMessage().contains("ERROR: Not Authorized")) {
-				throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid username or session token...");
-			}
-			else {
+		catch (NoSuchMethodException e){
+			LOGGER.error(e.getMessage());
+			throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
+		}
+		catch (SQLException e){
+			LOGGER.error(e.getMessage());
+			throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "SQL Database connection failed...");
+		}
+		catch (Exception e) {
 				LOGGER.error(e.getMessage());
-				throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Database connection failed...");
-			}
+				throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage()+"\n"+e.getClass());
 		}
 
 		return job;

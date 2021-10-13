@@ -79,10 +79,6 @@ public class JobServiceTest {
 		capTestEncodedJobId = System.getenv("capTestEncodedJobId");
 		capTestEncodedJobId2 = System.getenv("capTestEncodedJobId2");
 
-		capTestJobAccessToken1 = "mAzADzDyHXY9nibXOOlZVrpxb20pndgPFxGWnUIcMzYs5Gf8t9";
-		capTestJobAccessTokenExpectedSize1 = 1;
-		capTestJobAccessToken2 = "HL6Rvknt6ofXsuzA2S2dUgdsTIBnMba6jGM6tD13";
-		capTestJobAccessTokenExpectedSize2 = 1;
 	}
 	
 	@AfterClass
@@ -353,9 +349,11 @@ public class JobServiceTest {
 	@Test
 	public void testFetchCustomerJobRegular(){
 
-		String accessToken = capTestJobAccessToken1;
+		String jobAccessToken = capTestEncodedJobId;
+		BasicJob bjob = new BasicJob();
+		bjob.setJobAccessToken(jobAccessToken);
 
-		Job job = jobService.fetchCustomerJob(accessToken);
+		Job job = jobService.fetchCustomerJob(bjob);
 
 		assertNotNull("Customer did not have any jobs", job);
 	}
@@ -364,29 +362,40 @@ public class JobServiceTest {
 	public void testFetchCustomerJobBoundaryIn() {
 
 
-		String accessToken = capTestJobAccessToken2;
+		String jobAccessToken = capTestEncodedJobId2;
+		BasicJob bjob = new BasicJob();
+		bjob.setJobAccessToken(jobAccessToken);
 
-		Job job = jobService.fetchCustomerJob(accessToken);
+		Job job = jobService.fetchCustomerJob(bjob);
 
 		assertNotNull("Customer did not have any jobs", job);
 	}
 
 	@Test
 	public void testFetchCustomerJobBoundaryOut(){
-		String accessToken = capTestJobAccessToken1 + "0";
+		String jobAccessToken = capTestEncodedJobId2+"0";
+		BasicJob bjob = new BasicJob();
 
-		Job job = jobService.fetchCustomerJob(accessToken);
 
-		assertNull("Jobs returned false", job);
+		assertThrows(ResponseStatusException.class, () -> {
+			bjob.setJobAccessToken(jobAccessToken);
+
+			Job job = jobService.fetchCustomerJob(bjob);
+		});
+
 	}
 
 	@Test
 	public void testFetchCustomerJobException(){
-		String accessToken = null;
+		String jobAccessToken = null;
+		BasicJob bjob = new BasicJob();
 
-		Job job = jobService.fetchCustomerJob(accessToken);
 
-		assertNull("Jobs returned false", job);
+		assertThrows(ResponseStatusException.class, () -> {
+			bjob.setJobAccessToken(jobAccessToken);
+
+			Job job = jobService.fetchCustomerJob(bjob);
+		});
 	}
 
 

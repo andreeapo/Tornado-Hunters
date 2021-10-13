@@ -561,13 +561,7 @@ public class TornadoHuntersDao {
 	public int submitDesignRequest(DesignRequest designRequest) throws SQLException {
 		int newJobId = -1;
 
-	/**
-	 *
-	 * @param jobAccessToken unique public token given to the customer to access their jobs
-	 * @return {@code job} with the same access token
-	 * @throws SQLException if the connection to the database failed, or if the SQL command(s) within the method failed
-	 */
-	public Job fetchCustomerJob(String jobAccessToken) throws SQLException {
+
 
 		String sql = "SELECT submit_design_request(?,?,?,?,?,?,?,?,?,?,?)";
 
@@ -650,13 +644,23 @@ public class TornadoHuntersDao {
 
 		return wasRecordedSuccessfully;
 	}
+
+
+	/**
+	 * Executes SQL query to return the job given the jobId
+	 *
+	 * @param jobId unique public token given to the customer to access their jobs
+	 * @return {@code job} with the same access token
+	 * @throws SQLException if the connection to the database failed, or if the SQL command(s) within the method failed
+	 */
+	public Job fetchCustomerJob(int jobId) throws SQLException {
 		Job job = null;
 		String sql = "SELECT * FROM customer_access(?)";
 
 		try(Connection conn = TornadoHuntersDao.getConnection();
 				PreparedStatement prep = conn.prepareStatement(sql)) {
 
-			prep.setString(1, jobAccessToken);
+			prep.setInt(1, jobId);
 			ResultSet results = prep.executeQuery();
 
 			if(results.next()){

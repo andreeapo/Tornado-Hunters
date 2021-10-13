@@ -69,11 +69,6 @@ class TornadoHuntersDaoTest {
 		capTestMessagesExpectedSize = Integer.parseInt(System.getenv("capTestMessagesExpectedSize"));
 		capTestMessagesExpectedSize2 = Integer.parseInt(System.getenv("capTestMessagesExpectedSize2"));
 
-		capTestJobAccessToken1 = "mAzADzDyHXY9nibXOOlZVrpxb20pndgPFxGWnUIcMzYs5Gf8t9";
-		capTestJobAccessTokenExpectedSize1 = 1;
-		capTestJobAccessToken2 = "HL6Rvknt6ofXsuzA2S2dUgdsTIBnMba6jGM6tD13";
-		capTestJobAccessTokenExpectedSize2 = 1;
-
 
 		capTestDesignId = Integer.parseInt(System.getenv("capTestDesignId"));
 		capTestDesignId2 = Integer.parseInt(System.getenv("capTestDesignId2"));
@@ -559,7 +554,7 @@ class TornadoHuntersDaoTest {
 	public void testFetchCustomerJobRegular() throws SQLException {
 
 
-		String accessToken = capTestJobAccessToken1;
+		int accessToken = capTestJobId;
 		Job job = TornadoHuntersDao.getInstance().fetchCustomerJob(accessToken);
 
 		assertNotNull("User did not have the expected amount of jobs...", job);
@@ -568,15 +563,15 @@ class TornadoHuntersDaoTest {
 	@Test
 	public void testFetchCustomerJobBoundaryIn() throws SQLException {
 
-		String accessToken = capTestJobAccessToken2;
+		int accessToken = capTestJobId2;
 		Job job = TornadoHuntersDao.getInstance().fetchCustomerJob(accessToken);
 
-		assertNotNull("User did not have the expected amount of jobs...", job);
+		assertNotNull("Job doesnt exist", job);
 	}
 
 	@Test
 	public void testFetchCustomerJobBoundaryOut() throws SQLException {
-		String accessToken = capTestJobAccessToken1 + "0";
+		int accessToken = 0;
 
 		Job job = TornadoHuntersDao.getInstance().fetchCustomerJob(accessToken);
 
@@ -585,7 +580,7 @@ class TornadoHuntersDaoTest {
 
 	@Test
 	public void testFetchCustomerJobException() throws SQLException {
-		String accessToken = null;
+		int accessToken = -1;
 
 		Job job = TornadoHuntersDao.getInstance().fetchCustomerJob(accessToken);
 

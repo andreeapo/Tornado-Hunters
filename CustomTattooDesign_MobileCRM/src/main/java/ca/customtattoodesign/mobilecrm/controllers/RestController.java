@@ -235,11 +235,11 @@ public class RestController {
 	 * @throws ResponseStatusException gives details on which type of exception was thrown internally and why
 	 */
 	@PostMapping("/getJobAsCustomer")
-	public Job getJobAsCustomer(HttpServletRequest request, @RequestBody @NonNull String jobAccessToken) {
+	public Job getJobAsCustomer(HttpServletRequest request, @RequestBody @NonNull BasicJob job) {
 
 		LOGGER.info("Caller Address: '{}', Api Call Made: '{}'", request.getRemoteHost(), request.getServletPath());
 
-		return jobService.fetchCustomerJob(jobAccessToken);
+		return jobService.fetchCustomerJob(job);
 	}
 
 
