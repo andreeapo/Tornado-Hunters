@@ -11,8 +11,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-import ca.customtattoodesign.mobilecrm.beans.*;
-import ca.customtattoodesign.mobilecrm.beans.UserLogin;
 import ca.customtattoodesign.mobilecrm.beans.DesignRequest;
 import ca.customtattoodesign.mobilecrm.beans.Job;
 import ca.customtattoodesign.mobilecrm.beans.Message;
@@ -24,7 +22,7 @@ import ca.customtattoodesign.mobilecrm.beans.User;
  * within this class.
  * 
  * @author Roman Krutikov
- * @co-author Thomas Chapman
+ * @author Thomas Chapman
  *
  */
 public class TornadoHuntersDao {
@@ -645,7 +643,6 @@ public class TornadoHuntersDao {
 		return wasRecordedSuccessfully;
 	}
 
-
 	/**
 	 * Executes SQL query to return the job given the jobId
 	 *
@@ -678,12 +675,8 @@ public class TornadoHuntersDao {
 				job.setDescription(results.getString("description"));
 				job.setMessages(TornadoHuntersDao.getInstance().fetchJobMessages(results.getInt("id")));
 			}
-
-
-
 		}
 
 		return job;
-
 	}
 }

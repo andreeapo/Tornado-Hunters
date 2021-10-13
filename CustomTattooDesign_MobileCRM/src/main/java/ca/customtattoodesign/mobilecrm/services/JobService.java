@@ -7,17 +7,14 @@ import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 import java.util.Base64;
 import java.util.List;
-import java.util.Optional;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.GCMParameterSpec;
-import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
-import ca.customtattoodesign.mobilecrm.beans.ConversationLogin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,7 +25,6 @@ import org.springframework.web.server.ResponseStatusException;
 
 import ca.customtattoodesign.mobilecrm.beans.BasicJob;
 import ca.customtattoodesign.mobilecrm.beans.ClaimJobLogin;
-import ca.customtattoodesign.mobilecrm.beans.Design;
 import ca.customtattoodesign.mobilecrm.beans.DesignRequest;
 import ca.customtattoodesign.mobilecrm.beans.Job;
 import ca.customtattoodesign.mobilecrm.beans.SessionLogin;
@@ -39,7 +35,7 @@ import ca.customtattoodesign.mobilecrm.dao.TornadoHuntersDao;
  * 		acts as a middle-man between the RESTful API and the Database.
  * 
  * @author Roman Krutikov
- * @co-author Thomas Chapman
+ * @author Thomas Chapman
  */
 @Service
 public class JobService {
@@ -370,19 +366,17 @@ public class JobService {
 		return newlyCreatedJob;
 	}
 
-
-
 	/**
 	 * Returns the job for the customer's unique ID
 	 *
-	 * @param jobAccessToken unique public token given to the customer to access their jobs
-	 * @return {@code job} with the access token
+	 * @param bJob BasicJob which holds the job access token, a unique public token given to the customer 
+	 * 		to access their jobs
+	 * @return {@code job} a Job object that matches the BasicJob object
 	 */
     public Job fetchCustomerJob(BasicJob bJob) {
 		Job job;
 
 		try{
-
 			int id = getJobIdFromJobAccessToken(bJob.getJobAccessToken());
 			job = TornadoHuntersDao.getInstance().fetchCustomerJob(id);
 		}

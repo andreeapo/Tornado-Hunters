@@ -78,7 +78,6 @@ public class JobServiceTest {
 		capTestImageName2 = System.getenv("capTestImageName2");
 		capTestEncodedJobId = System.getenv("capTestEncodedJobId");
 		capTestEncodedJobId2 = System.getenv("capTestEncodedJobId2");
-
 	}
 	
 	@AfterClass
@@ -341,14 +340,10 @@ public class JobServiceTest {
 		assertThrows(NullPointerException.class, () -> {
 			BasicJob bJob = jobService.sendJobDesignRequest(designRequest, null);
 		});
-
 	}
-
-
 
 	@Test
 	public void testFetchCustomerJobRegular(){
-
 		String jobAccessToken = capTestEncodedJobId;
 		BasicJob bjob = new BasicJob();
 		bjob.setJobAccessToken(jobAccessToken);
@@ -360,8 +355,6 @@ public class JobServiceTest {
 
 	@Test
 	public void testFetchCustomerJobBoundaryIn() {
-
-
 		String jobAccessToken = capTestEncodedJobId2;
 		BasicJob bjob = new BasicJob();
 		bjob.setJobAccessToken(jobAccessToken);
@@ -376,7 +369,6 @@ public class JobServiceTest {
 		String jobAccessToken = capTestEncodedJobId2+"0";
 		BasicJob bjob = new BasicJob();
 
-
 		assertThrows(ResponseStatusException.class, () -> {
 			bjob.setJobAccessToken(jobAccessToken);
 
@@ -390,14 +382,12 @@ public class JobServiceTest {
 		String jobAccessToken = null;
 		BasicJob bjob = new BasicJob();
 
-
 		assertThrows(ResponseStatusException.class, () -> {
 			bjob.setJobAccessToken(jobAccessToken);
 
 			Job job = jobService.fetchCustomerJob(bjob);
 		});
 	}
-
 
 
 }

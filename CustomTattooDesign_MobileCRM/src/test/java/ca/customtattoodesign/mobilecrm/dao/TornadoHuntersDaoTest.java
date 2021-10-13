@@ -68,8 +68,6 @@ class TornadoHuntersDaoTest {
 		capTestJobExpectedSize2 = Integer.parseInt(System.getenv("capTestJobExpectedSize2"));
 		capTestMessagesExpectedSize = Integer.parseInt(System.getenv("capTestMessagesExpectedSize"));
 		capTestMessagesExpectedSize2 = Integer.parseInt(System.getenv("capTestMessagesExpectedSize2"));
-
-
 		capTestDesignId = Integer.parseInt(System.getenv("capTestDesignId"));
 		capTestDesignId2 = Integer.parseInt(System.getenv("capTestDesignId2"));
 		capTestImageName = System.getenv("capTestImageName");
@@ -544,16 +542,8 @@ class TornadoHuntersDaoTest {
 		assertFalse("Recording of a design image was successful when it should have failed", wasRecordedSuccessfully);
 	}
 
-
-
-
-
-
-
 	@Test
 	public void testFetchCustomerJobRegular() throws SQLException {
-
-
 		int accessToken = capTestJobId;
 		Job job = TornadoHuntersDao.getInstance().fetchCustomerJob(accessToken);
 
@@ -562,7 +552,6 @@ class TornadoHuntersDaoTest {
 
 	@Test
 	public void testFetchCustomerJobBoundaryIn() throws SQLException {
-
 		int accessToken = capTestJobId2;
 		Job job = TornadoHuntersDao.getInstance().fetchCustomerJob(accessToken);
 
@@ -572,7 +561,6 @@ class TornadoHuntersDaoTest {
 	@Test
 	public void testFetchCustomerJobBoundaryOut() throws SQLException {
 		int accessToken = 0;
-
 		Job job = TornadoHuntersDao.getInstance().fetchCustomerJob(accessToken);
 
 		assertNull("Jobs returned false", job);
@@ -581,12 +569,10 @@ class TornadoHuntersDaoTest {
 	@Test
 	public void testFetchCustomerJobException() throws SQLException {
 		int accessToken = -1;
-
 		Job job = TornadoHuntersDao.getInstance().fetchCustomerJob(accessToken);
 
 		assertNull("Jobs returned false", job);
 	}
-
 
 
 }
