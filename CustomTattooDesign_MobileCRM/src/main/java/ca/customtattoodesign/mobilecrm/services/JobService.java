@@ -315,14 +315,19 @@ public class JobService {
 		}
 		
 		if (newJobId != -1) {
-			boolean allUploadingSuccessful = true;
 			for (MultipartFile image : images) {
+				boolean uploadSuccessful = false;
+				int designId = -1;
 				try {
-					int designId = TornadoHuntersDao.getInstance().getNextAvailableDesignId();
+					designId = TornadoHuntersDao.getInstance().getNextAvailableDesignId();
 					if (designId != -1) {
 						awsService.uploadDesignImage(designId, image);
-						allUploadingSuccessful = allUploadingSuccessful && 
-								TornadoHuntersDao.getInstance().recordDesignRequestImage(designId, newJobId, image.getOriginalFilename());
+						uploadSuccessful = TornadoHuntersDao.getInstance()
+								.recordDesignRequestImage(designId, newJobId, image.getOriginalFilename());
+						if (!uploadSuccessful) {
+							LOGGER.warn("Failed to upload image '{}' for job '{}', designId '{}' was unused",
+									image.getOriginalFilename(), newJobId, designId);
+						}
 					}
 					else {
 						LOGGER.error("Database failed to get an available design id");
@@ -337,11 +342,6 @@ public class JobService {
 					LOGGER.error(e.getMessage());
 					throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Database connection failed...");
 				}
-			}
-			if (!allUploadingSuccessful) {
-				LOGGER.error("One or more refences images failed to be uploaded");
-				throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, 
-						"Unable to upload all requested reference images...");
 			}
 		}
 		else {

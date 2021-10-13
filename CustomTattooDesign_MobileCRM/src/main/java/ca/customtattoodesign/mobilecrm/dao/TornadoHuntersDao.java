@@ -595,14 +595,14 @@ public class TornadoHuntersDao {
 	public int getNextAvailableDesignId() throws SQLException {
 		int nextDesignId = -1;
 
-		String sql = "SELECT next_design_id()";
+		String sql = "SELECT nextval('next_design_unique_id')";
 
 		try (Connection conn = TornadoHuntersDao.getConnection(); Statement stmt = conn.createStatement()) {
 
 			ResultSet results = stmt.executeQuery(sql);
 
 			if (results.next()) {
-				nextDesignId = results.getInt("id");
+				nextDesignId = results.getInt("nextval");
 			}
 		}
 
@@ -640,5 +640,4 @@ public class TornadoHuntersDao {
 
 		return wasRecordedSuccessfully;
 	}
-
 }
