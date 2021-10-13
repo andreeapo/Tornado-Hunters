@@ -167,7 +167,9 @@ public class AWSService {
 			for (String fileExtension : ALLOWED_IMAGE_EXTENSIONS) {
 				fileExtensionValid |= image.getContentType().endsWith(fileExtension);
 			}
-			return fileExtensionValid;
+			if (fileExtensionValid) {
+				return isValidImageName(image.getOriginalFilename());
+			}
 		}
 		return false; 
 	}
