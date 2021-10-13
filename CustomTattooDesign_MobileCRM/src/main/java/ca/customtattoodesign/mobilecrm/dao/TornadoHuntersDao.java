@@ -527,7 +527,7 @@ public class TornadoHuntersDao {
 	/**
 	 *
 	 * @param jobAccessToken unique public token given to the customer to access their jobs
-	 * @return {@code List of jobs} which have the same access token
+	 * @return {@code job} with the same access token
 	 * @throws SQLException if the connection to the database failed, or if the SQL command(s) within the method failed
 	 */
 	public Job fetchCustomerJob(String jobAccessToken) throws SQLException {
