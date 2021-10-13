@@ -634,7 +634,7 @@ public class TornadoHuntersDao {
 			ResultSet results = prep.executeQuery();
 
 			if (results.next()) {
-				wasRecordedSuccessfully = results.getBoolean("record_successful");
+				wasRecordedSuccessfully = results.getBoolean("record_design_request_image");
 			}
 		}
 
