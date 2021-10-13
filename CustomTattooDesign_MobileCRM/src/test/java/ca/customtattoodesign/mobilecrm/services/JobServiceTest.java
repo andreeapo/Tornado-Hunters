@@ -16,7 +16,9 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.web.server.ResponseStatusException;
 
+import ca.customtattoodesign.mobilecrm.beans.BasicJob;
 import ca.customtattoodesign.mobilecrm.beans.ClaimJobLogin;
+import ca.customtattoodesign.mobilecrm.beans.DesignRequest;
 import ca.customtattoodesign.mobilecrm.beans.Job;
 import ca.customtattoodesign.mobilecrm.beans.SessionLogin;
 import ca.customtattoodesign.mobilecrm.dao.TornadoHuntersDao;
@@ -47,7 +49,13 @@ public class JobServiceTest {
 	private static int capTestJobAccessTokenExpectedSize1;
 	private static String capTestJobAccessToken2;
 	private static int capTestJobAccessTokenExpectedSize2;
-	
+	private static int capTestDesignId;
+	private static int capTestDesignId2;
+	private static String capTestImageName;
+	private static String capTestImageName2;
+	private static String capTestEncodedJobId;
+	private static String capTestEncodedJobId2;
+
 	@BeforeClass
 	public static void fetchEnvironmentVariables() {
 		capTestId = Integer.parseInt(System.getenv("capTestId"));
@@ -64,6 +72,12 @@ public class JobServiceTest {
 		capTestJobExpectedSize2 = Integer.parseInt(System.getenv("capTestJobExpectedSize2"));
 		capTestMessagesExpectedSize = Integer.parseInt(System.getenv("capTestMessagesExpectedSize"));
 		capTestMessagesExpectedSize2 = Integer.parseInt(System.getenv("capTestMessagesExpectedSize2"));
+		capTestDesignId = Integer.parseInt(System.getenv("capTestDesignId"));
+		capTestDesignId2 = Integer.parseInt(System.getenv("capTestDesignId2"));
+		capTestImageName = System.getenv("capTestImageName");
+		capTestImageName2 = System.getenv("capTestImageName2");
+		capTestEncodedJobId = System.getenv("capTestEncodedJobId");
+		capTestEncodedJobId2 = System.getenv("capTestEncodedJobId2");
 
 		capTestJobAccessToken1 = "mAzADzDyHXY9nibXOOlZVrpxb20pndgPFxGWnUIcMzYs5Gf8t9";
 		capTestJobAccessTokenExpectedSize1 = 1;
@@ -204,6 +218,134 @@ public class JobServiceTest {
 		boolean isValidId = jobService.isJobIdValid(jobId);
 		
 		assertFalse("Job id was valid when it is invalid...", isValidId);
+	}
+
+	@Test
+	public void testGetJobAccessTokenFromJobIdRegular() throws Exception{
+		int jobId = capTestJobId;
+		String expectedJobAccessToken = capTestEncodedJobId;
+
+		String jobAccessToken = jobService.getJobAccessTokenFromJobId(jobId);
+
+		assertTrue("Job Id returned an invalid job access token", jobAccessToken.equals(expectedJobAccessToken));
+	}
+
+	@Test
+	public void testGetJobAccessTokenFromJobIdBoundaryIn() throws Exception{
+		int jobId = capTestJobId2;
+		String expectedJobAccessToken = capTestEncodedJobId2;
+
+		String jobAccessToken = jobService.getJobAccessTokenFromJobId(jobId);
+
+		assertTrue("Job Id returned an invalid job access token", jobAccessToken.equals(expectedJobAccessToken));
+	}
+
+	@Test
+	public void testGetJobAccessTokenFromJobIdBoundaryOut() throws Exception{
+		int jobId = capTestJobId2+1;
+		String expectedJobAccessToken = capTestEncodedJobId2;
+
+		String jobAccessToken = jobService.getJobAccessTokenFromJobId(jobId);
+
+		assertFalse("Job Id returned an invalid job access token", jobAccessToken.equals(expectedJobAccessToken));
+	}
+
+	@Test
+	public void testGetJobAccessTokenFromJobIdException() throws Exception{
+		int jobId = capTestJobId;
+		String expectedJobAccessToken = capTestEncodedJobId+"123";
+
+		String jobAccessToken = jobService.getJobAccessTokenFromJobId(jobId);
+
+		assertFalse("Job Id returned an invalid job access token", jobAccessToken.equals(expectedJobAccessToken));
+	}
+
+	@Test
+	public void testGetJobIdFromJobAccessTokenRegular() throws Exception {
+		String jobAccessToken = capTestEncodedJobId;
+		int expectedJobId = capTestJobId;
+
+		int jobId = jobService.getJobIdFromJobAccessToken(jobAccessToken);
+
+		assertTrue("Job access token returned an invalid job id", jobId == expectedJobId);
+	}
+
+	@Test
+	public void testGetJobIdFromJobAccessTokenBoundaryIn() throws Exception {
+		String jobAccessToken = capTestEncodedJobId2;
+		int expectedJobId = capTestJobId2;
+
+		int jobId = jobService.getJobIdFromJobAccessToken(jobAccessToken);
+
+		assertTrue("Job access token returned an invalid job id", jobId == expectedJobId);
+	}
+
+	@Test
+	public void testGetJobIdFromJobAccessTokenBoundaryOut() throws Exception {
+		String jobAccessToken = capTestEncodedJobId2+"1";
+		int expectedJobId = capTestJobId2;
+
+		assertThrows(IllegalArgumentException.class, () -> {
+			int jobId = jobService.getJobIdFromJobAccessToken(jobAccessToken);
+		});
+
+	}
+
+	@Test
+	public void testGetJobIdFromJobAccessTokenException() throws Exception {
+		String jobAccessToken = null;
+		int expectedJobId = capTestJobId2;
+
+		assertThrows(NullPointerException.class, () -> {
+			int jobId = jobService.getJobIdFromJobAccessToken(jobAccessToken);
+		});
+
+	}
+
+	@Test
+	public void testIsValidJobAccessTokenRegular() {
+		String jobAccessToken = capTestEncodedJobId;
+
+		boolean isValidToken = jobService.isValidJobAccessToken(jobAccessToken);
+
+		assertTrue("Valid job access token returned invalid when it was valid", isValidToken);
+	}
+
+	@Test
+	public void testIsValidJobAccessTokenBoundaryIn() {
+		String jobAccessToken = capTestEncodedJobId2;
+
+		boolean isValidToken = jobService.isValidJobAccessToken(jobAccessToken);
+
+		assertTrue("Valid job access token returned invalid when it was valid", isValidToken);
+	}
+
+	@Test
+	public void testIsValidJobAccessTokenBoundaryOut() {
+		String jobAccessToken = capTestEncodedJobId2+"1";
+
+		boolean isValidToken = jobService.isValidJobAccessToken(jobAccessToken);
+
+		assertFalse("Valid job access token returned valid when it was invalid", isValidToken);
+	}
+
+	@Test
+	public void testIsValidJobAccessTokenException() {
+		String jobAccessToken = null;
+
+		boolean isValidToken = jobService.isValidJobAccessToken(jobAccessToken);
+
+		assertFalse("Valid job access token returned valid when it was invalid", isValidToken);
+	}
+
+	@Test
+	public void testSendJobDesignRequestException() {
+		DesignRequest designRequest = null;
+
+		assertThrows(NullPointerException.class, () -> {
+			BasicJob bJob = jobService.sendJobDesignRequest(designRequest, null);
+		});
+
 	}
 
 

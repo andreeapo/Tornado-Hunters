@@ -16,6 +16,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import ca.customtattoodesign.mobilecrm.beans.UserLogin;
+import ca.customtattoodesign.mobilecrm.beans.BasicJob;
+import ca.customtattoodesign.mobilecrm.beans.DesignRequest;
 import ca.customtattoodesign.mobilecrm.beans.Job;
 import ca.customtattoodesign.mobilecrm.beans.Message;
 import ca.customtattoodesign.mobilecrm.beans.SessionUser;
@@ -43,7 +45,13 @@ class TornadoHuntersDaoTest {
 	private static int capTestJobAccessTokenExpectedSize1;
 	private static String capTestJobAccessToken2;
 	private static int capTestJobAccessTokenExpectedSize2;
-	
+	private static int capTestDesignId;
+	private static int capTestDesignId2;
+	private static String capTestImageName;
+	private static String capTestImageName2;
+	private static String capTestEncodedJobId;
+	private static String capTestEncodedJobId2;
+
 	@BeforeAll
 	public static void fetchEnvironmentVariables() {
 		capTestId = Integer.parseInt(System.getenv("capTestId"));
@@ -67,6 +75,12 @@ class TornadoHuntersDaoTest {
 		capTestJobAccessTokenExpectedSize2 = 1;
 
 
+		capTestDesignId = Integer.parseInt(System.getenv("capTestDesignId"));
+		capTestDesignId2 = Integer.parseInt(System.getenv("capTestDesignId2"));
+		capTestImageName = System.getenv("capTestImageName");
+		capTestImageName2 = System.getenv("capTestImageName2");
+		capTestEncodedJobId = System.getenv("capTestEncodedJobId");
+		capTestEncodedJobId2 = System.getenv("capTestEncodedJobId2");
 	}
 	
 	@AfterAll
@@ -473,6 +487,66 @@ class TornadoHuntersDaoTest {
 		List<Message> tempMessages = TornadoHuntersDao.getInstance().fetchUnreadJobMessages(jobId);
 		
 		assertTrue("Job did not have the expected amount of messages...", tempMessages.size() == 0);
+	}
+
+	@Test
+	public void testSubmitDesignRequestException() throws SQLException {
+		DesignRequest designRequest = null;
+
+		assertThrows(NullPointerException.class, () -> {
+			int newJobId = TornadoHuntersDao.getInstance().submitDesignRequest(designRequest);
+		});
+	}
+
+	@Test
+	public void testGetNextAvailableDesignIdRegular() throws SQLException {
+		int nextDesignId = TornadoHuntersDao.getInstance().getNextAvailableDesignId();
+
+		assertTrue("No next available designer id", nextDesignId != -1);
+	}
+
+	@Test
+	public void testRecordDesignRequestImageRegular() throws SQLException {
+		int designId = TornadoHuntersDao.getInstance().getNextAvailableDesignId();
+		int jobId = capTestJobId;
+		String imageName = capTestImageName;
+
+		boolean wasRecordedSuccessfully = TornadoHuntersDao.getInstance().recordDesignRequestImage(designId, jobId, imageName);
+
+		assertTrue("Recording of a design image was unsuccessful when it should have succeeded", wasRecordedSuccessfully);
+	}
+
+	@Test
+	public void testRecordDesignRequestImageBoundaryIn() throws SQLException {
+		int designId = TornadoHuntersDao.getInstance().getNextAvailableDesignId();
+		int jobId = capTestJobId2;
+		String imageName = capTestImageName2;
+
+		boolean wasRecordedSuccessfully = TornadoHuntersDao.getInstance().recordDesignRequestImage(designId, jobId, imageName);
+
+		assertTrue("Recording of a design image was unsuccessful when it should have succeeded", wasRecordedSuccessfully);
+	}
+
+	@Test
+	public void testRecordDesignRequestImageBoundaryOut() throws SQLException {
+		int designId = TornadoHuntersDao.getInstance().getNextAvailableDesignId()-1;
+		int jobId = capTestJobId2;
+		String imageName = capTestImageName2;
+
+		boolean wasRecordedSuccessfully = TornadoHuntersDao.getInstance().recordDesignRequestImage(designId, jobId, imageName);
+
+		assertFalse("Recording of a design image was successful when it should have failed", wasRecordedSuccessfully);
+	}
+
+	@Test
+	public void testRecordDesignRequestImageException() throws SQLException {
+		int designId = -1;
+		int jobId = capTestJobId2;
+		String imageName = capTestImageName2;
+
+		boolean wasRecordedSuccessfully = TornadoHuntersDao.getInstance().recordDesignRequestImage(designId, jobId, imageName);
+
+		assertFalse("Recording of a design image was successful when it should have failed", wasRecordedSuccessfully);
 	}
 
 
