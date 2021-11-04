@@ -40,13 +40,18 @@ class TornadoHuntersDaoTest {
 	private static int capTestJobExpectedSize2;
 	private static int capTestMessagesExpectedSize;
 	private static int capTestMessagesExpectedSize2;
+
+	private static String capTestJobAccessToken1;
+	private static int capTestJobAccessTokenExpectedSize1;
+	private static String capTestJobAccessToken2;
+	private static int capTestJobAccessTokenExpectedSize2;
 	private static int capTestDesignId;
 	private static int capTestDesignId2;
 	private static String capTestImageName;
 	private static String capTestImageName2;
 	private static String capTestEncodedJobId;
 	private static String capTestEncodedJobId2;
-	
+
 	@BeforeAll
 	public static void fetchEnvironmentVariables() {
 		capTestId = Integer.parseInt(System.getenv("capTestId"));
@@ -476,65 +481,98 @@ class TornadoHuntersDaoTest {
 		
 		assertTrue("Job did not have the expected amount of messages...", tempMessages.size() == 0);
 	}
-	
+
 	@Test
 	public void testSubmitDesignRequestException() throws SQLException {
 		DesignRequest designRequest = null;
-		
+
 		assertThrows(NullPointerException.class, () -> {
 			int newJobId = TornadoHuntersDao.getInstance().submitDesignRequest(designRequest);
 		});
 	}
-	
+
 	@Test
 	public void testGetNextAvailableDesignIdRegular() throws SQLException {
 		int nextDesignId = TornadoHuntersDao.getInstance().getNextAvailableDesignId();
-		
+
 		assertTrue("No next available designer id", nextDesignId != -1);
 	}
-	
+
 	@Test
 	public void testRecordDesignRequestImageRegular() throws SQLException {
 		int designId = TornadoHuntersDao.getInstance().getNextAvailableDesignId();
 		int jobId = capTestJobId;
 		String imageName = capTestImageName;
-		
+
 		boolean wasRecordedSuccessfully = TornadoHuntersDao.getInstance().recordDesignRequestImage(designId, jobId, imageName);
-		
+
 		assertTrue("Recording of a design image was unsuccessful when it should have succeeded", wasRecordedSuccessfully);
 	}
-	
+
 	@Test
 	public void testRecordDesignRequestImageBoundaryIn() throws SQLException {
 		int designId = TornadoHuntersDao.getInstance().getNextAvailableDesignId();
 		int jobId = capTestJobId2;
 		String imageName = capTestImageName2;
-		
+
 		boolean wasRecordedSuccessfully = TornadoHuntersDao.getInstance().recordDesignRequestImage(designId, jobId, imageName);
-		
+
 		assertTrue("Recording of a design image was unsuccessful when it should have succeeded", wasRecordedSuccessfully);
 	}
-	
+
 	@Test
 	public void testRecordDesignRequestImageBoundaryOut() throws SQLException {
 		int designId = TornadoHuntersDao.getInstance().getNextAvailableDesignId()-1;
 		int jobId = capTestJobId2;
 		String imageName = capTestImageName2;
-		
+
 		boolean wasRecordedSuccessfully = TornadoHuntersDao.getInstance().recordDesignRequestImage(designId, jobId, imageName);
-		
+
 		assertFalse("Recording of a design image was successful when it should have failed", wasRecordedSuccessfully);
 	}
-	
+
 	@Test
 	public void testRecordDesignRequestImageException() throws SQLException {
 		int designId = -1;
 		int jobId = capTestJobId2;
 		String imageName = capTestImageName2;
-		
+
 		boolean wasRecordedSuccessfully = TornadoHuntersDao.getInstance().recordDesignRequestImage(designId, jobId, imageName);
-		
+
 		assertFalse("Recording of a design image was successful when it should have failed", wasRecordedSuccessfully);
 	}
+
+	@Test
+	public void testFetchCustomerJobRegular() throws SQLException {
+		int accessToken = capTestJobId;
+		Job job = TornadoHuntersDao.getInstance().fetchCustomerJob(accessToken);
+
+		assertNotNull("User did not have the expected amount of jobs...", job);
+	}
+
+	@Test
+	public void testFetchCustomerJobBoundaryIn() throws SQLException {
+		int accessToken = capTestJobId2;
+		Job job = TornadoHuntersDao.getInstance().fetchCustomerJob(accessToken);
+
+		assertNotNull("Job doesnt exist", job);
+	}
+
+	@Test
+	public void testFetchCustomerJobBoundaryOut() throws SQLException {
+		int accessToken = 0;
+		Job job = TornadoHuntersDao.getInstance().fetchCustomerJob(accessToken);
+
+		assertNull("Jobs returned false", job);
+	}
+
+	@Test
+	public void testFetchCustomerJobException() throws SQLException {
+		int accessToken = -1;
+		Job job = TornadoHuntersDao.getInstance().fetchCustomerJob(accessToken);
+
+		assertNull("Jobs returned false", job);
+	}
+
 
 }

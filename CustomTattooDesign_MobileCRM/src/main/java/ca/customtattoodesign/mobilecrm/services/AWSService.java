@@ -84,35 +84,34 @@ public class AWSService {
 	 */
 	public void uploadDesignImage(int designId, MultipartFile image) {
 		
-		if (this.isValidImage(image)) {
-			try {
-				startS3Client();
-			}
-			catch (IllegalArgumentException e) {
-				LOGGER.error(e.getMessage());
-				throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "AWS connection failed ...");
-			}
-			
-			String imageName = image.getOriginalFilename();
-			
-			File uploadableImage = null;
-			try {
-				uploadableImage = convertMultiPartFileToFile(image);
-			}
-			catch (IOException e) {
-				LOGGER.error(e.getMessage());
-				throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Unable to convert image to uploadable format ...");
-			}
-			if (uploadableImage != null) {
-				s3Client.putObject(new PutObjectRequest(envBucketName, BASE_S3_PATH + designId + "/" + imageName, uploadableImage));
-				uploadableImage.delete();
-			}
-
-			stopS3Client();
-		}
-		else {
+		if (!this.isValidImage(image)) {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Uploaded image does not meet expected standards ...");
 		}
+		try {
+			startS3Client();
+		}
+		catch (IllegalArgumentException e) {
+			LOGGER.error(e.getMessage());
+			throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "AWS connection failed ...");
+		}
+		
+		String imageName = image.getOriginalFilename();
+		
+		File uploadableImage = null;
+		try {
+			uploadableImage = convertMultiPartFileToFile(image);
+		}
+		catch (IOException e) {
+			LOGGER.error(e.getMessage());
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Unable to convert image to uploadable format ...");
+		}
+		if (uploadableImage != null) {
+			s3Client.putObject(new PutObjectRequest(envBucketName, BASE_S3_PATH + designId + "/" + imageName, uploadableImage));
+			uploadableImage.delete();
+		}
+
+		stopS3Client();
+
 	}
 	
 	/**

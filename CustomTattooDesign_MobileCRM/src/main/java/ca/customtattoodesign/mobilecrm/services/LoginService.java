@@ -38,7 +38,7 @@ public class LoginService {
 	 * Determines whether the UserLogin user is a user that exists in the database, and generates a session token. 
 	 * Information about the user is also fetched. All this information is saved within the SessionUser object.
 	 * 
-	 * @param user the UserLogin that is being authenticated
+	 * @param userLogin the UserLogin that is being authenticated
 	 * @return a SessionUser object which holds info on if the user has been authenticated and their session token,
 	 * 		and general info about the user
 	 */
@@ -125,7 +125,7 @@ public class LoginService {
 	 * 		a session token if the user exists and they requested for it. Information about the user is also fetched.  
 	 * 		All this information is saved within the SessionUser object.
 	 * 
-	 * @param session the SessionLogin that is being authenticated
+	 * @param sessionLogin the SessionLogin that is being authenticated
 	 * @return a SessionUser object which holds info on if the user has been authenticated and their session token,
 	 * 		and general info about the user
 	 */
@@ -205,7 +205,7 @@ public class LoginService {
 	 * Checks whether or not a SessionLogin's fields are in the proper format, if
 	 * they are in a proper format that means this user could exist in the database.
 	 * 
-	 * @param user the SessionLogin that is being authenticated
+	 * @param sessionLogin the SessionLogin that is being authenticated
 	 * @return {@code true} if the SessionLogin's fields could exist in the database<br>
 	 *	       {@code false} if the SessionLogin's fields would never appear in the database
 	 */
@@ -258,7 +258,7 @@ public class LoginService {
 	/**
 	 * Checks whether or not the String (sessionToken) is empty or null.
 	 * 
-	 * @param username is the String that is being checked
+	 * @param sessionToken is the String that is being checked
 	 * @return {@code true} if String (sessionToken) is not null or empty <br>
 			   {@code false} if String (sessionToken) is null or empty
 	 */
@@ -269,7 +269,7 @@ public class LoginService {
 	/**
 	 * Checks whether or not the String (str) is empty or null.
 	 * 
-	 * @param username is the String that is being checked
+	 * @param str is the String that is being checked
 	 * @return {@code true} if String (str) is not null or empty <br>
 			   {@code false} if String (str) is null or empty
 	 */

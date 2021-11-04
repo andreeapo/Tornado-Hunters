@@ -12,7 +12,6 @@ import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,6 +45,7 @@ import ca.customtattoodesign.mobilecrm.services.LoginService;
  * The {@code RestController} class is used for handling RESTful API requests.
  * 
  * @author Roman Krutikov
+ * @author Thomas Chapman
  */
 @RequestMapping("api")
 @org.springframework.web.bind.annotation.RestController
@@ -214,6 +214,23 @@ public class RestController {
 		}
 		return sentSuccessfully;
 	}
+
+	/**
+	 * Pulls the job for a customer given a public access token
+	 *
+	 * @param bJob BasicJob which holds the job access token, a unique public token given to the customer 
+	 * 		to access their jobs
+	 * 
+	 * @return {@code job} with the access token
+	 * @throws ResponseStatusException gives details on which type of exception was thrown internally and why
+	 */
+	@PostMapping("/getJobAsCustomer")
+	public Job getJobAsCustomer(HttpServletRequest request, @RequestBody @NonNull BasicJob bJob) {
+
+		LOGGER.info("Caller Address: '{}', Api Call Made: '{}'", request.getRemoteHost(), request.getServletPath());
+
+		return jobService.fetchCustomerJob(bJob);
+	}
 	
 	/**
 	 * Receives a tattoo design request and returns a BasicJob object with job information if submission of the job request
@@ -245,8 +262,10 @@ public class RestController {
 		if (image4.isPresent()) { images.add(image4.get()); }
 		if (image5.isPresent()) { images.add(image5.get()); }
 		if (image6.isPresent()) { images.add(image6.get()); }
-		return jobService.sendJobDesignRequest(designSubmission, (MultipartFile[])images.toArray());
+		
+		return jobService.sendJobDesignRequest(designSubmission, images);
 	}
+	
 	
 	// Test method to be removed...
 	@PostMapping("/encodeJobId")
@@ -259,6 +278,15 @@ public class RestController {
 	public int getEncodedJobId(@RequestParam("encodedJobId") String encodedJobId) throws NoSuchMethodException, InvalidKeyException, IllegalArgumentException, UnsupportedEncodingException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidAlgorithmParameterException, IllegalBlockSizeException, BadPaddingException {
 		return jobService.getJobIdFromJobAccessToken(encodedJobId);
 	}
+	
+	//Test method to be removed...
+	@PostMapping("/testModelAttribute")
+	public BasicJob testModelAttribute(HttpServletRequest request, @RequestParam("image1") Optional<MultipartFile> image1,
+			@ModelAttribute BasicJob bJob) {
+		LOGGER.info("Image Exists? "+ image1.isPresent());
+		return bJob;
+	}
+	
 	
 	/**
 	 * A simple method that runs "Pong!", this method can be used for testing if the API is online.

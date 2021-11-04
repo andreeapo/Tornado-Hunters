@@ -5,16 +5,15 @@ import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
-import java.util.Optional;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.GCMParameterSpec;
-import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
 import org.slf4j.Logger;
@@ -27,7 +26,6 @@ import org.springframework.web.server.ResponseStatusException;
 
 import ca.customtattoodesign.mobilecrm.beans.BasicJob;
 import ca.customtattoodesign.mobilecrm.beans.ClaimJobLogin;
-import ca.customtattoodesign.mobilecrm.beans.Design;
 import ca.customtattoodesign.mobilecrm.beans.DesignRequest;
 import ca.customtattoodesign.mobilecrm.beans.Job;
 import ca.customtattoodesign.mobilecrm.beans.SessionLogin;
@@ -38,18 +36,18 @@ import ca.customtattoodesign.mobilecrm.dao.TornadoHuntersDao;
  * 		acts as a middle-man between the RESTful API and the Database.
  * 
  * @author Roman Krutikov
- *
+ * @author Thomas Chapman
  */
 @Service
 public class JobService {
 	
 	private Logger LOGGER = LoggerFactory.getLogger(this.getClass());
-	
+
 	public static final int JOB_ACCESS_TOKEN_LENGTH = 40;
-	
+
 	@Autowired
 	private AWSService awsService;
-	
+
 	private int idShift;
 	private String key;
 	private String salt;
@@ -171,20 +169,20 @@ public class JobService {
 	public boolean isJobIdValid(int jobId) {
 		return jobId > 0;
 	}
-	
+
 	/**
 	 * Initializes environment variables that are required to perform security-related operations
-	 * 
-	 * @throws IllegalArgumentException if a certain environment variable is not set up, 
+	 *
+	 * @throws IllegalArgumentException if a certain environment variable is not set up,
 	 * 		with details in the message.
 	 */
 	private void initializeSecurityEnvironmentVariables() throws NoSuchMethodException{
-		
+
 		String envKey = System.getenv("capSECKey");
 		String envSalt = System.getenv("capSECSalt");
 		String envVector = System.getenv("capSECVector");
 		String envIdShiftStr = System.getenv("capSECIdShift");
-		
+
 		if (envKey == null) {
 			throw new NoSuchMethodException("Security 'key' not set in user environment variables...");
 		}
@@ -197,7 +195,7 @@ public class JobService {
 		if (envIdShiftStr == null) {
 			throw new NoSuchMethodException("Security 'id shift' not set in user environment variables...");
 		}
-		
+
 		try {
 			this.idShift = Integer.parseInt(envIdShiftStr);
 		}
@@ -210,10 +208,10 @@ public class JobService {
 		this.vector = envVector;
 
 	}
-	
+
 	/**
 	 * Converts a jobId to a jobAccessToken.
-	 * 
+	 *
 	 * @param jobId, the id of the job that requires a job access token
 	 * @return a String job access token that corresponds with the jobId provided
 	 * @throws NoSuchMethodException if initialization of security environment variables failed
@@ -226,27 +224,27 @@ public class JobService {
 	 * @throws IllegalBlockSizeException if something went wrong with the algorithm that performs the conversion
 	 * @throws BadPaddingException if something went wrong with the algorithm that performs the conversion
 	 */
-	public String getJobAccessTokenFromJobId(int jobId) throws NoSuchMethodException, IllegalArgumentException, 
-			UnsupportedEncodingException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, 
+	public String getJobAccessTokenFromJobId(int jobId) throws NoSuchMethodException, IllegalArgumentException,
+			UnsupportedEncodingException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException,
 			InvalidAlgorithmParameterException, IllegalBlockSizeException, BadPaddingException{
 
 		initializeSecurityEnvironmentVariables();
 
 		int tempJobId = jobId + this.idShift;
 		String jobIdStr= Integer.toString(tempJobId) + this.salt;
-		
+
 		SecretKeySpec skeySpec = new SecretKeySpec(key.getBytes("UTF-8"), "AES");
 		GCMParameterSpec gcmParameterSpec = new GCMParameterSpec(128, this.vector.getBytes("UTF-8"));
 		Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
 		cipher.init(Cipher.ENCRYPT_MODE, skeySpec, gcmParameterSpec);
-		
+
 		byte[] encrypted = cipher.doFinal(jobIdStr.getBytes());
 		return Base64.getEncoder().encodeToString(encrypted);
 	}
-	
+
 	/**
 	 * Converts a jobAccessToken to a jobId.
-	 * 
+	 *
 	 * @param jobAccessToken, the access token of the job that requires a job id
 	 * @return an Integer job id that corresponds with the jobAccessToken provided
 	 * @throws NoSuchMethodException if initialization of security environment variables failed
@@ -259,17 +257,17 @@ public class JobService {
 	 * @throws IllegalBlockSizeException if something went wrong with the algorithm that performs the conversion
 	 * @throws BadPaddingException if something went wrong with the algorithm that performs the conversion
 	 */
-	public int getJobIdFromJobAccessToken(String jobAccessToken) throws NoSuchMethodException, IllegalArgumentException, 
-			UnsupportedEncodingException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, 
+	public int getJobIdFromJobAccessToken(String jobAccessToken) throws NoSuchMethodException, IllegalArgumentException,
+			UnsupportedEncodingException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException,
 			InvalidAlgorithmParameterException, IllegalBlockSizeException, BadPaddingException{
-	    
+
 		initializeSecurityEnvironmentVariables();
-		
+
 		SecretKeySpec skeySpec = new SecretKeySpec(key.getBytes("UTF-8"), "AES");
         GCMParameterSpec gcmParameterSpec = new GCMParameterSpec(128, this.vector.getBytes("UTF-8"));
         Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
         cipher.init(Cipher.DECRYPT_MODE, skeySpec, gcmParameterSpec);
-        
+
         byte[] original = cipher.doFinal(Base64.getDecoder().decode(jobAccessToken));
         String originalStr = new String(original);
         originalStr = originalStr.substring(0, originalStr.length() - this.salt.length());
@@ -281,30 +279,30 @@ public class JobService {
         	throw new InvalidAlgorithmParameterException(e.getMessage());
         }
         int trueId = tempJobId - this.idShift;
-        
+
 	    return trueId;
 	}
-	
+
 	/**
 	 * Checks if the provided jobAccessToken is a valid access token
-	 * 
+	 *
 	 * @param jobAccessToken String, the access token to be checked
-	 * @return 
+	 * @return
 	 */
 	public boolean isValidJobAccessToken(String jobAccessToken) {
 		return jobAccessToken != null && jobAccessToken.length() == JOB_ACCESS_TOKEN_LENGTH;
 	}
-	
+
 	/**
 	 * Sends a design request to the database and reference images to the database/s3 storage, then
 	 *  returns a Basic Job object which holds information about the job created from the design request
-	 * 
+	 *
 	 * @param designSubmission the Design request that is being submitted
-	 * @param images an Array of reference images that were associated with the design request
+	 * @param images an ArrayList of reference images that were associated with the design request
 	 * @return a BasicJob object which holds the id and access token of the created job from the design request
 	 */
-	public BasicJob sendJobDesignRequest(DesignRequest designSubmission, MultipartFile[] images) {
-		
+	public BasicJob sendJobDesignRequest(DesignRequest designSubmission, ArrayList<MultipartFile> images) {
+
 		int newJobId = -1;
 		try {
 			newJobId = TornadoHuntersDao.getInstance().submitDesignRequest(designSubmission);
@@ -313,7 +311,7 @@ public class JobService {
 			LOGGER.error(e.getMessage());
 			throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Database connection failed...");
 		}
-		
+
 		if (newJobId != -1) {
 			for (MultipartFile image : images) {
 				boolean uploadSuccessful = false;
@@ -331,7 +329,7 @@ public class JobService {
 					}
 					else {
 						LOGGER.error("Database failed to get an available design id");
-						throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, 
+						throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
 								"Unable to get new design id to upload reference image...");
 					}
 				}
@@ -348,25 +346,56 @@ public class JobService {
 			LOGGER.error("Unable to submit job request");
 			throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Was unable to submit the design request...");
 		}
-		
+
 		BasicJob newlyCreatedJob;
 		try {
 			newlyCreatedJob = BasicJob.builder()
 					.jobId(newJobId)
 					.jobAccessToken(this.getJobAccessTokenFromJobId(newJobId))
 					.build();
-		} 
+		}
 		catch (NoSuchMethodException e) {
 			LOGGER.error(e.getMessage());
 			throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
 		}
 		catch (Exception e) {
 			LOGGER.error(e.getMessage());
-			throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, 
+			throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
 					"An unexpected error occurred when submitting the design request");
 		}
-		
+
 		return newlyCreatedJob;
 	}
-	
+
+	/**
+	 * Returns the job for the customer's unique ID
+	 *
+	 * @param bJob BasicJob which holds the job access token, a unique public token given to the customer 
+	 * 		to access their jobs
+	 * @return {@code job} a Job object that matches the BasicJob object
+	 */
+    public Job fetchCustomerJob(BasicJob bJob) {
+		Job job;
+
+		try{
+			int id = getJobIdFromJobAccessToken(bJob.getJobAccessToken());
+			job = TornadoHuntersDao.getInstance().fetchCustomerJob(id);
+		}
+		catch (NoSuchMethodException e){
+			LOGGER.error(e.getMessage());
+			throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
+		}
+		catch (SQLException e){
+			LOGGER.error(e.getMessage());
+			throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "SQL Database connection failed...");
+		}
+		catch (Exception e) {
+				LOGGER.error(e.getMessage());
+				throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage()+"\n"+e.getClass());
+		}
+
+		return job;
+
+    }
+
 }

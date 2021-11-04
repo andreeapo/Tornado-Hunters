@@ -11,7 +11,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-import ca.customtattoodesign.mobilecrm.beans.UserLogin;
 import ca.customtattoodesign.mobilecrm.beans.DesignRequest;
 import ca.customtattoodesign.mobilecrm.beans.Job;
 import ca.customtattoodesign.mobilecrm.beans.Message;
@@ -23,6 +22,7 @@ import ca.customtattoodesign.mobilecrm.beans.User;
  * within this class.
  * 
  * @author Roman Krutikov
+ * @author Thomas Chapman
  *
  */
 public class TornadoHuntersDao {
@@ -183,7 +183,7 @@ public class TornadoHuntersDao {
 
 	/**
 	 * Gets a user's ID from the database based on their login info.
-	 * 
+	 *
 	 * @param user     the User object into which the fields from the database are
 	 *                 loaded into
 	 * @param username a String that will be checked against usernames in the
@@ -220,7 +220,7 @@ public class TornadoHuntersDao {
 
 	/**
 	 * Gets various fields from the database to complete a User object.
-	 * 
+	 *
 	 * @param user         the User object into which the fields from the database
 	 *                     are loaded into
 	 * @param username     a String that will be checked against usernames in the
@@ -272,7 +272,7 @@ public class TornadoHuntersDao {
 
 	/**
 	 * Sets a generated session token to a user in the database.
-	 * 
+	 *
 	 * @param user         the UserLogin to which the session token is being
 	 *                     assigned to
 	 * @param sessionToken a previously generated String token to save to the
@@ -551,13 +551,15 @@ public class TornadoHuntersDao {
 
 	/**
 	 * Submits a design request to the database.
-	 * 
+	 *
 	 * @param designRequest DesignRequest object that holds all the info related to the job request
 	 * @return Integer newJobId, the id of the job that was created from the design request
 	 * @throws SQLException if the connection to the database failed, or if the SQL command(s) within the method failed
 	 */
 	public int submitDesignRequest(DesignRequest designRequest) throws SQLException {
 		int newJobId = -1;
+
+
 
 		String sql = "SELECT submit_design_request(?,?,?,?,?,?,?,?,?,?,?)";
 
@@ -587,7 +589,7 @@ public class TornadoHuntersDao {
 
 	/**
 	 * Gets the next available design id
-	 * 
+	 *
 	 * @return Integer of the next designId that can be used inserted into
 	 * @throws SQLException if the connection to the database failed, or if the SQL
 	 *                      command(s) within the method failed
@@ -611,7 +613,7 @@ public class TornadoHuntersDao {
 
 	/**
 	 * Records info of a design request image that was sent to the AWS S3 storage.
-	 * 
+	 *
 	 * @param designId  the ID of the image/design that is being recorded
 	 * @param jobId     the ID of the job to which the image belongs to
 	 * @param imageName the file name of the image being recorded
@@ -639,5 +641,42 @@ public class TornadoHuntersDao {
 		}
 
 		return wasRecordedSuccessfully;
+	}
+
+	/**
+	 * Executes SQL query to return the job given the jobId
+	 *
+	 * @param jobId unique public token given to the customer to access their jobs
+	 * @return {@code job} with the same access token
+	 * @throws SQLException if the connection to the database failed, or if the SQL command(s) within the method failed
+	 */
+	public Job fetchCustomerJob(int jobId) throws SQLException {
+		Job job = null;
+		String sql = "SELECT * FROM customer_access(?)";
+
+		try(Connection conn = TornadoHuntersDao.getConnection();
+				PreparedStatement prep = conn.prepareStatement(sql)) {
+
+			prep.setInt(1, jobId);
+			ResultSet results = prep.executeQuery();
+
+			if(results.next()){
+				job = new Job();
+				job.setJobId(results.getInt("id"));
+				job.setArtistId(results.getInt("user_id"));
+				job.setState(results.getString("state"));
+				job.setTitle(results.getString("title"));
+				job.setCustomerName(results.getString("customer"));
+				job.setTattooLocation(results.getString("tattoo_position"));
+				job.setTattooType(results.getString("size"));
+				job.setTattooStyle(results.getString("style"));
+				job.setColor(results.getBoolean("color"));
+				job.setCommission(results.getDouble("commission"));
+				job.setDescription(results.getString("description"));
+				job.setMessages(TornadoHuntersDao.getInstance().fetchJobMessages(results.getInt("id")));
+			}
+		}
+
+		return job;
 	}
 }
