@@ -5,6 +5,7 @@ import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 
@@ -297,10 +298,10 @@ public class JobService {
 	 *  returns a Basic Job object which holds information about the job created from the design request
 	 *
 	 * @param designSubmission the Design request that is being submitted
-	 * @param images an Array of reference images that were associated with the design request
+	 * @param images an ArrayList of reference images that were associated with the design request
 	 * @return a BasicJob object which holds the id and access token of the created job from the design request
 	 */
-	public BasicJob sendJobDesignRequest(DesignRequest designSubmission, MultipartFile[] images) {
+	public BasicJob sendJobDesignRequest(DesignRequest designSubmission, ArrayList<MultipartFile> images) {
 
 		int newJobId = -1;
 		try {

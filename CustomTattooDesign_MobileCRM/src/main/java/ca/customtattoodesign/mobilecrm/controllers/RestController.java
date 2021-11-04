@@ -262,7 +262,8 @@ public class RestController {
 		if (image4.isPresent()) { images.add(image4.get()); }
 		if (image5.isPresent()) { images.add(image5.get()); }
 		if (image6.isPresent()) { images.add(image6.get()); }
-		return jobService.sendJobDesignRequest(designSubmission, (MultipartFile[])images.toArray());
+		
+		return jobService.sendJobDesignRequest(designSubmission, images);
 	}
 	
 	
