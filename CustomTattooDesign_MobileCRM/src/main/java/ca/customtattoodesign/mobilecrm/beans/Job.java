@@ -19,6 +19,8 @@ import lombok.experimental.SuperBuilder;
 public class Job extends BasicJob{
 
 	private int artistId;
+	private String artistFirstName;
+	private String artistLastName;
 	private String state;
 	private String title;
 	private String customerName;
@@ -29,5 +31,5 @@ public class Job extends BasicJob{
 	private double commission;
 	private String description;
 	private List<Message> messages;
-	private List<Design> designs;
+	private List<DesignImage> designImages;
 }

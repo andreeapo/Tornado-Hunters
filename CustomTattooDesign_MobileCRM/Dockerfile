@@ -3,14 +3,14 @@ LABEL maintainer krutikov@sheridancollege.ca
 COPY target/CustomTattooDesign_MobileCRM-0.0.1-SNAPSHOT.jar ctdhelloworld.jar
 ENTRYPOINT ["java","-jar","ctdhelloworld.jar"]
 EXPOSE 4004
-ENV capDBusername=setWhenCompiling   \
-    capDBpassword=setWhenCompiling   \
-	capDBhost=setWhenCompiling   \
-	capDBdatabase=setWhenCompiling   \
-	capDBport=setWhenCompiling   \
-	capTestId=setWhenCompiling   \
-	capTestId2=setWhenCompiling   \
-	capTestUser=setWhenCompiling   \	
+ENV capDBusername=setWhenCompiling    \
+    capDBpassword=setWhenCompiling    \
+	capDBhost=setWhenCompiling    \
+	capDBdatabase=setWhenCompiling    \
+	capDBport=setWhenCompiling    \
+	capTestId=setWhenCompiling    \
+	capTestId2=setWhenCompiling    \
+	capTestUser=setWhenCompiling    \	
 	capTestPassword=setWhenCompiling   \
 	capTestUser2=setWhenCompiling   \	
 	capTestPassword2=setWhenCompiling   \
@@ -26,13 +26,19 @@ ENV capDBusername=setWhenCompiling   \
 	capTestDesignId2=setWhenCompiling  \
 	capTestImageName=setWhenCompiling  \
 	capTestImageName2=setWhenCompiling  \
+	capTestImagePath=setWhenCompiling  \
+	capTestImagePath2=setWhenCompiling  \
 	capTestEncodedJobId=setWhenCompiling  \
 	capTestEncodedJobId2=setWhenCompiling  \
 	capAWSBucketName=setWhenCompiling  \
 	capAWSAccessKey=setWhenCompiling  \
 	capAWSSecretKey=setWhenCompiling  \
 	capAWSRegion=setWhenCompiling  \
-	capSECIdShift=-setWhenCompiling  \
+	capSECIdShift=setWhenCompiling  \
 	capSECKey=setWhenCompiling  \
 	capSECSalt=setWhenCompiling  \
-	capSECVector=setWhenCompiling 
+	capSECVector=setWhenCompiling  \
+	capTestUserFirstName=setWhenCompiling  \
+	capTestUserLastName=setWhenCompiling  \
+	capTestUser2FirstName=setWhenCompiling  \
+	capTestUser2LastName=setWhenCompiling 

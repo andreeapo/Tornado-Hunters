@@ -18,6 +18,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import ca.customtattoodesign.mobilecrm.beans.BasicJob;
 import ca.customtattoodesign.mobilecrm.beans.ClaimJobLogin;
+import ca.customtattoodesign.mobilecrm.beans.DesignImage;
 import ca.customtattoodesign.mobilecrm.beans.DesignRequest;
 import ca.customtattoodesign.mobilecrm.beans.Job;
 import ca.customtattoodesign.mobilecrm.beans.SessionLogin;
@@ -34,6 +35,10 @@ public class JobServiceTest {
 	private static int capTestId2;
 	private static String capTestUser;
 	private static String capTestUser2;
+	private static String capTestUserFirstName;
+	private static String capTestUserLastName;
+	private static String capTestUser2FirstName;
+	private static String capTestUser2LastName;
 	private static String capTestPassword;
 	private static String capTestPassword2;
 	private static String capTestSessionToken;
@@ -46,13 +51,13 @@ public class JobServiceTest {
 	private static int capTestMessagesExpectedSize2;
 
 	private static String capTestJobAccessToken1;
-	private static int capTestJobAccessTokenExpectedSize1;
 	private static String capTestJobAccessToken2;
-	private static int capTestJobAccessTokenExpectedSize2;
 	private static int capTestDesignId;
 	private static int capTestDesignId2;
 	private static String capTestImageName;
 	private static String capTestImageName2;
+	private static String capTestImagePath;
+	private static String capTestImagePath2;
 	private static String capTestEncodedJobId;
 	private static String capTestEncodedJobId2;
 
@@ -62,6 +67,10 @@ public class JobServiceTest {
 		capTestId2 = Integer.parseInt(System.getenv("capTestId2"));
 		capTestUser = System.getenv("capTestUser");
 		capTestUser2 = System.getenv("capTestUser2");
+		capTestUserFirstName = System.getenv("capTestUserFirstName");
+		capTestUserLastName = System.getenv("capTestUserLastName");
+		capTestUser2FirstName = System.getenv("capTestUser2FirstName");
+		capTestUser2LastName = System.getenv("capTestUser2LastName");
 		capTestPassword = System.getenv("capTestPassword");
 		capTestPassword2 = System.getenv("capTestPassword2");
 		capTestSessionToken = System.getenv("capTestSessionToken");
@@ -72,10 +81,15 @@ public class JobServiceTest {
 		capTestJobExpectedSize2 = Integer.parseInt(System.getenv("capTestJobExpectedSize2"));
 		capTestMessagesExpectedSize = Integer.parseInt(System.getenv("capTestMessagesExpectedSize"));
 		capTestMessagesExpectedSize2 = Integer.parseInt(System.getenv("capTestMessagesExpectedSize2"));
+		
+		capTestJobAccessToken1 = System.getenv("capTestEncodedJobId");
+		capTestJobAccessToken2 = System.getenv("capTestEncodedJobId2");
 		capTestDesignId = Integer.parseInt(System.getenv("capTestDesignId"));
 		capTestDesignId2 = Integer.parseInt(System.getenv("capTestDesignId2"));
 		capTestImageName = System.getenv("capTestImageName");
 		capTestImageName2 = System.getenv("capTestImageName2");
+		capTestImagePath = System.getenv("capTestImagePath");
+		capTestImagePath2 = System.getenv("capTestImagePath2");
 		capTestEncodedJobId = System.getenv("capTestEncodedJobId");
 		capTestEncodedJobId2 = System.getenv("capTestEncodedJobId2");
 	}
@@ -388,6 +402,89 @@ public class JobServiceTest {
 			Job job = jobService.fetchCustomerJob(bjob);
 		});
 	}
-
+	
+	@Test
+	public void testGetDesignsRegular() {
+		BasicJob basicJob = BasicJob.builder()
+				.jobId(capTestJobId)
+				.build();
+		
+		List<DesignImage> designImages = jobService.getDesigns(basicJob);
+		assertTrue("No designImages were found for job that has images", designImages.size() > 0);
+	}
+	
+	@Test
+	public void testGetDesignsRegular2() {
+		BasicJob basicJob = BasicJob.builder()
+				.jobAccessToken(capTestJobAccessToken1)
+				.build();
+		
+		List<DesignImage> designImages = jobService.getDesigns(basicJob);
+		assertTrue("No designImages were found for job that has images", designImages.size() > 0);
+	}
+	
+	@Test
+	public void testGetDesignsBoundaryIn() {
+		BasicJob basicJob = BasicJob.builder()
+				.jobId(capTestJobId2)
+				.build();
+		
+		List<DesignImage> designImages = jobService.getDesigns(basicJob);
+		assertTrue("No designImages were found for job that has images", designImages.size() > 0);
+	}
+	
+	@Test
+	public void testGetDesignsBoundaryIn2() {
+		BasicJob basicJob = BasicJob.builder()
+				.jobAccessToken(capTestJobAccessToken2)
+				.build();
+		
+		List<DesignImage> designImages = jobService.getDesigns(basicJob);
+		assertTrue("No designImages were found for job that has images", designImages.size() > 0);
+	}
+	
+	@Test
+	public void testGetDesignsBoundaryOut() {
+		BasicJob basicJob = BasicJob.builder()
+				.jobId(0)
+				.build();
+		
+		assertThrows(ResponseStatusException.class, () -> {
+			List<DesignImage> designImages = jobService.getDesigns(basicJob);
+		});
+	}
+	
+	@Test
+	public void testGetDesignsBoundaryOut2() {
+		BasicJob basicJob = BasicJob.builder()
+				.jobAccessToken(capTestJobAccessToken2+"1")
+				.build();
+		
+		assertThrows(ResponseStatusException.class, () -> {
+			List<DesignImage> designImages = jobService.getDesigns(basicJob);
+		});
+	}
+	
+	@Test
+	public void testGetDesignsException() {
+		BasicJob basicJob = BasicJob.builder()
+				.jobId(-1)
+				.build();
+		
+		assertThrows(ResponseStatusException.class, () -> {
+			List<DesignImage> designImages = jobService.getDesigns(basicJob);
+		});
+	}
+	
+	@Test
+	public void testGetDesignsException2() {
+		BasicJob basicJob = BasicJob.builder()
+				.jobAccessToken("")
+				.build();
+		
+		assertThrows(ResponseStatusException.class, () -> {
+			List<DesignImage> designImages = jobService.getDesigns(basicJob);
+		});
+	}
 
 }

@@ -14,11 +14,8 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 @Data
 @SuperBuilder
-public class User {
+public class User extends BasicUser{
 	
-	private int id;
-	private String firstName;
-	private String lastName;
 	private String role;
 	private String paypalEmail;
 	private int overrideJobLimit;

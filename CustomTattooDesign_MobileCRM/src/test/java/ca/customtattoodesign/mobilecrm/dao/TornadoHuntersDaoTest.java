@@ -2,6 +2,7 @@ package ca.customtattoodesign.mobilecrm.dao;
 
 import static org.junit.Assert.*;
 
+import java.io.File;
 import java.sql.SQLException;
 import java.util.List;
 
@@ -12,11 +13,15 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.web.server.ResponseStatusException;
 
 import ca.customtattoodesign.mobilecrm.beans.UserLogin;
-import ca.customtattoodesign.mobilecrm.beans.BasicJob;
+import ca.customtattoodesign.mobilecrm.services.AWSService;
+import ca.customtattoodesign.mobilecrm.beans.BasicUser;
+import ca.customtattoodesign.mobilecrm.beans.DesignImage;
 import ca.customtattoodesign.mobilecrm.beans.DesignRequest;
 import ca.customtattoodesign.mobilecrm.beans.Job;
 import ca.customtattoodesign.mobilecrm.beans.Message;
@@ -30,6 +35,10 @@ class TornadoHuntersDaoTest {
 	private static int capTestId2;
 	private static String capTestUser;
 	private static String capTestUser2;
+	private static String capTestUserFirstName;
+	private static String capTestUserLastName;
+	private static String capTestUser2FirstName;
+	private static String capTestUser2LastName;
 	private static String capTestPassword;
 	private static String capTestPassword2;
 	private static String capTestSessionToken;
@@ -42,13 +51,13 @@ class TornadoHuntersDaoTest {
 	private static int capTestMessagesExpectedSize2;
 
 	private static String capTestJobAccessToken1;
-	private static int capTestJobAccessTokenExpectedSize1;
 	private static String capTestJobAccessToken2;
-	private static int capTestJobAccessTokenExpectedSize2;
 	private static int capTestDesignId;
 	private static int capTestDesignId2;
 	private static String capTestImageName;
 	private static String capTestImageName2;
+	private static String capTestImagePath;
+	private static String capTestImagePath2;
 	private static String capTestEncodedJobId;
 	private static String capTestEncodedJobId2;
 
@@ -58,6 +67,10 @@ class TornadoHuntersDaoTest {
 		capTestId2 = Integer.parseInt(System.getenv("capTestId2"));
 		capTestUser = System.getenv("capTestUser");
 		capTestUser2 = System.getenv("capTestUser2");
+		capTestUserFirstName = System.getenv("capTestUserFirstName");
+		capTestUserLastName = System.getenv("capTestUserLastName");
+		capTestUser2FirstName = System.getenv("capTestUser2FirstName");
+		capTestUser2LastName = System.getenv("capTestUser2LastName");
 		capTestPassword = System.getenv("capTestPassword");
 		capTestPassword2 = System.getenv("capTestPassword2");
 		capTestSessionToken = System.getenv("capTestSessionToken");
@@ -68,10 +81,15 @@ class TornadoHuntersDaoTest {
 		capTestJobExpectedSize2 = Integer.parseInt(System.getenv("capTestJobExpectedSize2"));
 		capTestMessagesExpectedSize = Integer.parseInt(System.getenv("capTestMessagesExpectedSize"));
 		capTestMessagesExpectedSize2 = Integer.parseInt(System.getenv("capTestMessagesExpectedSize2"));
+		
+		capTestJobAccessToken1 = System.getenv("capTestEncodedJobId");
+		capTestJobAccessToken2 = System.getenv("capTestEncodedJobId2");
 		capTestDesignId = Integer.parseInt(System.getenv("capTestDesignId"));
 		capTestDesignId2 = Integer.parseInt(System.getenv("capTestDesignId2"));
 		capTestImageName = System.getenv("capTestImageName");
 		capTestImageName2 = System.getenv("capTestImageName2");
+		capTestImagePath = System.getenv("capTestImagePath");
+		capTestImagePath2 = System.getenv("capTestImagePath2");
 		capTestEncodedJobId = System.getenv("capTestEncodedJobId");
 		capTestEncodedJobId2 = System.getenv("capTestEncodedJobId2");
 	}
@@ -92,6 +110,9 @@ class TornadoHuntersDaoTest {
 		TornadoHuntersDao.getInstance().removeSessionToken(capTestId, capTestSessionToken);
 		TornadoHuntersDao.getInstance().removeSessionToken(capTestId2, capTestSessionToken2);
 	}
+	
+	@Autowired
+	private AWSService awsService;
 	
 	@Test
 	public void testIsUserLoginAuthorizedRegular() throws SQLException {
@@ -499,12 +520,17 @@ class TornadoHuntersDaoTest {
 	}
 
 	@Test
-	public void testRecordDesignRequestImageRegular() throws SQLException {
+	public void testRecordDesignRequestImageRegular() throws Exception {
 		int designId = TornadoHuntersDao.getInstance().getNextAvailableDesignId();
 		int jobId = capTestJobId;
 		String imageName = capTestImageName;
-
-		boolean wasRecordedSuccessfully = TornadoHuntersDao.getInstance().recordDesignRequestImage(designId, jobId, imageName);
+		File image = new File(capTestImagePath);
+		
+		boolean wasRecordedSuccessfully = false;
+		
+		if (awsService.uploadDesignImage(designId, image)) {
+			wasRecordedSuccessfully = TornadoHuntersDao.getInstance().recordDesignRequestImage(designId, jobId, imageName);
+		}
 
 		assertTrue("Recording of a design image was unsuccessful when it should have succeeded", wasRecordedSuccessfully);
 	}
@@ -514,8 +540,13 @@ class TornadoHuntersDaoTest {
 		int designId = TornadoHuntersDao.getInstance().getNextAvailableDesignId();
 		int jobId = capTestJobId2;
 		String imageName = capTestImageName2;
-
-		boolean wasRecordedSuccessfully = TornadoHuntersDao.getInstance().recordDesignRequestImage(designId, jobId, imageName);
+		File image = new File(capTestImagePath2);
+		
+		boolean wasRecordedSuccessfully = false;
+		
+		if (awsService.uploadDesignImage(designId, image)) {
+			wasRecordedSuccessfully = TornadoHuntersDao.getInstance().recordDesignRequestImage(designId, jobId, imageName);
+		}
 
 		assertTrue("Recording of a design image was unsuccessful when it should have succeeded", wasRecordedSuccessfully);
 	}
@@ -525,8 +556,13 @@ class TornadoHuntersDaoTest {
 		int designId = TornadoHuntersDao.getInstance().getNextAvailableDesignId()-1;
 		int jobId = capTestJobId2;
 		String imageName = capTestImageName2;
-
-		boolean wasRecordedSuccessfully = TornadoHuntersDao.getInstance().recordDesignRequestImage(designId, jobId, imageName);
+		File image = new File(capTestImagePath2);
+		
+		boolean wasRecordedSuccessfully = false;
+		
+		if (awsService.uploadDesignImage(designId, image)) {
+			wasRecordedSuccessfully = TornadoHuntersDao.getInstance().recordDesignRequestImage(designId, jobId, imageName);
+		}
 
 		assertFalse("Recording of a design image was successful when it should have failed", wasRecordedSuccessfully);
 	}
@@ -536,8 +572,13 @@ class TornadoHuntersDaoTest {
 		int designId = -1;
 		int jobId = capTestJobId2;
 		String imageName = capTestImageName2;
-
-		boolean wasRecordedSuccessfully = TornadoHuntersDao.getInstance().recordDesignRequestImage(designId, jobId, imageName);
+		File image = new File(capTestImagePath2);
+		
+		boolean wasRecordedSuccessfully = false;
+		
+		if (awsService.uploadDesignImage(designId, image)) {
+			wasRecordedSuccessfully = TornadoHuntersDao.getInstance().recordDesignRequestImage(designId, jobId, imageName);
+		}
 
 		assertFalse("Recording of a design image was successful when it should have failed", wasRecordedSuccessfully);
 	}
@@ -573,6 +614,170 @@ class TornadoHuntersDaoTest {
 
 		assertNull("Jobs returned false", job);
 	}
+	
+	@Test
+	public void testFetchBasicArtistInfoRegular() throws SQLException {
+		int userId = capTestId;
+		String expectedFirstName = capTestUserFirstName;
+		String expectedLastName = capTestUserLastName;
+		
+		BasicUser basicUser = TornadoHuntersDao.getInstance().fetchBasicArtistInfo(userId);
+		
+		assertTrue("Invalid first or last name were returned", 
+				basicUser.getFirstName().equals(expectedFirstName) && basicUser.getLastName().equals(expectedLastName));
+	}
+	
+	@Test
+	public void testFetchBasicArtistInfoBoundaryIn() throws SQLException {
+		int userId = capTestId2;
+		String expectedFirstName = capTestUser2FirstName;
+		String expectedLastName = capTestUser2LastName;
+		
+		BasicUser basicUser = TornadoHuntersDao.getInstance().fetchBasicArtistInfo(userId);
+		
+		assertTrue("Invalid first or last name were returned", 
+				basicUser.getFirstName().equals(expectedFirstName) && basicUser.getLastName().equals(expectedLastName));
+	}
+	
+	@Test
+	public void testFetchBasicArtistInfoBoundaryOut() throws SQLException {
+		int userId = capTestId2+1;
+		String expectedFirstName = capTestUser2FirstName;
+		String expectedLastName = capTestUser2LastName;
+		
+		BasicUser basicUser = TornadoHuntersDao.getInstance().fetchBasicArtistInfo(userId);
+		
+		assertFalse("Invalid first or last name were returned", 
+				basicUser.getFirstName().equals(expectedFirstName) && basicUser.getLastName().equals(expectedLastName));
+	}
+	
+	@Test
+	public void testFetchBasicArtistInfoException() throws SQLException {
+		int userId = -1;
+		
+		BasicUser basicUser = TornadoHuntersDao.getInstance().fetchBasicArtistInfo(userId);
+		
+		assertTrue("BasicUser was returned when there should have been none", basicUser == null);
+	}
+	
+	@Test
+	public void testRecordDesignDraftRegular() throws SQLException {
+		int designId = TornadoHuntersDao.getInstance().getNextAvailableDesignId();
+		int jobId = capTestJobId;
+		String imageName = capTestImageName;
+		String sessionToken = capTestSessionToken;
+		File image = new File (capTestImagePath);
+		
+		boolean wasRecordedSuccessfully = false;
+		
+		if (awsService.uploadDesignImage(designId, image)) {
+			wasRecordedSuccessfully = TornadoHuntersDao.getInstance().recordDesignDraft(designId, jobId, imageName, sessionToken);
+		}
 
+		assertTrue("Recording of a design image was unsuccessful when it should have succeeded", wasRecordedSuccessfully);
+	}
+	
+	@Test
+	public void testRecordDesignDraftRegular2() throws SQLException {
+		int designId = TornadoHuntersDao.getInstance().getNextAvailableDesignId();
+		int jobId = capTestJobId;
+		String imageName = capTestImageName;
+		String sessionToken = "";
+		File image = new File (capTestImagePath);
+		
+		boolean wasRecordedSuccessfully = false;
+		
+		if (awsService.uploadDesignImage(designId, image)) {
+			wasRecordedSuccessfully = TornadoHuntersDao.getInstance().recordDesignDraft(designId, jobId, imageName, sessionToken);
+		}
 
+		assertTrue("Recording of a design image was unsuccessful when it should have succeeded", wasRecordedSuccessfully);
+	}
+	
+	@Test
+	public void testRecordDesignDraftBoundaryIn() throws SQLException {
+		int designId = TornadoHuntersDao.getInstance().getNextAvailableDesignId();
+		int jobId = capTestJobId2;
+		String imageName = capTestImageName2;
+		String sessionToken = capTestSessionToken2;
+		File image = new File (capTestImagePath2);
+		
+		boolean wasRecordedSuccessfully = false;
+		
+		if (awsService.uploadDesignImage(designId, image)) {
+			wasRecordedSuccessfully = TornadoHuntersDao.getInstance().recordDesignDraft(designId, jobId, imageName, sessionToken);
+		}
+
+		assertTrue("Recording of a design image was unsuccessful when it should have succeeded", wasRecordedSuccessfully);
+	}
+
+	@Test
+	public void testRecordDesignDraftBoundaryOut() throws SQLException {
+		int designId = TornadoHuntersDao.getInstance().getNextAvailableDesignId();
+		int jobId = capTestJobId2;
+		String imageName = capTestImageName2;
+		String sessionToken = capTestSessionToken2+"1";
+		File image = new File (capTestImagePath2);
+		
+		boolean wasRecordedSuccessfully = false;
+		
+		if (awsService.uploadDesignImage(designId, image)) {
+			assertThrows(SQLException.class, () -> {
+				boolean wasRecordedSuccessfully2 = TornadoHuntersDao.getInstance().recordDesignDraft(designId, jobId, imageName, sessionToken);
+			});
+		}
+
+		assertFalse("Recording of a design image was successful when it should have failed", wasRecordedSuccessfully);
+	}
+	
+	@Test
+	public void testRecordDesignDraftException() throws SQLException {
+		int designId = -1;
+		int jobId = capTestJobId2;
+		String imageName = capTestImageName2;
+		String sessionToken = null;
+		File image = new File (capTestImagePath2);
+		
+		boolean wasRecordedSuccessfully = false;
+		
+		if (awsService.uploadDesignImage(designId, image)) {
+			assertThrows(SQLException.class, () -> {
+				boolean wasRecordedSuccessfully2 = TornadoHuntersDao.getInstance().recordDesignDraft(designId, jobId, imageName, sessionToken);
+			});
+		}
+
+		assertFalse("Recording of a design image was successful when it should have failed", wasRecordedSuccessfully);
+	}
+	
+	@Test
+	public void testFetchJobDesignsRegular() throws SQLException {
+		int jobId = capTestJobId;
+		
+		List<DesignImage> designImages = TornadoHuntersDao.getInstance().fetchJobDesigns(jobId);
+		assertTrue("No designImages were found for job that has images", designImages.size() > 0);
+	}
+	
+	@Test
+	public void testFetchJobDesignsBoundaryIn() throws SQLException {
+		int jobId = capTestJobId2;
+		
+		List<DesignImage> designImages = TornadoHuntersDao.getInstance().fetchJobDesigns(jobId);
+		assertTrue("No designImages were found for job that has images", designImages.size() > 0);
+	}
+	
+	@Test
+	public void testFetchJobDesignsBoundaryOut() throws SQLException {
+		int jobId = 0;
+		
+		List<DesignImage> designImages = TornadoHuntersDao.getInstance().fetchJobDesigns(jobId);
+		assertFalse("DesignImages were found for an invalid job", designImages.size() > 0);
+	}
+	
+	@Test
+	public void testFetchJobDesignsException() throws SQLException {
+		int jobId = -1;
+		
+		List<DesignImage> designImages = TornadoHuntersDao.getInstance().fetchJobDesigns(jobId);
+		assertFalse("DesignImages were found for an invalid job", designImages.size() > 0);
+	}
 }

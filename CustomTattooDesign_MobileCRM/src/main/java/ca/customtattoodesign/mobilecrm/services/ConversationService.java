@@ -1,5 +1,6 @@
 package ca.customtattoodesign.mobilecrm.services;
 
+import java.io.File;
 import java.sql.SQLException;
 import java.util.List;
 
@@ -8,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 import ca.customtattoodesign.mobilecrm.beans.ConversationLogin;
@@ -26,6 +28,9 @@ public class ConversationService {
 
 	@Autowired
 	private JobService jobService;
+	
+	@Autowired
+	private AWSService awsService;
 	
 	private Logger LOGGER = LoggerFactory.getLogger(this.getClass());
 	
@@ -164,5 +169,117 @@ public class ConversationService {
 	public boolean isStringMessageValid(String stringMessage) {
 		return stringMessage != null && stringMessage.length() > 0;
 	}
+	
+	/**
+	 * Uploads a design draft image to the AWS S3 Storage and records it in the database based on the image
+	 * and login of the user.
+	 * 
+	 * @param convoLogin a ConversationLogin object which should contain values for 
+	 * 		jobId (the ID of the job to which to send the message to) and
+	 *      sessionToken (a sessionToken to verify if the artist or the customer are sending the message)
+	 * @param image a MultipartFile representation of the design draft begin sent
+	 * @return {@code true} if the design draft was uploaded successfully<br>
+	 *	       {@code false} if uploading the design draft failed
+	 */
+	public boolean sendDesignDraft(ConversationLogin convoLogin, MultipartFile image) {
+		boolean recordedSuccessfully = false;
+		
+		int jobId = convoLogin.getJobId();
+		String sessionToken = convoLogin.getSessionToken();
+		if (sessionToken == null) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+					"No session token specified...");
+		}
+		if (jobService.isJobIdValid(jobId)) {
+			int designId = -1;
+			try {
+				designId = TornadoHuntersDao.getInstance().getNextAvailableDesignId();
+				if (designId != -1) {
+					awsService.uploadDesignImage(designId, image);
+					recordedSuccessfully = TornadoHuntersDao.getInstance()
+							.recordDesignDraft(designId, jobId, image.getOriginalFilename(), sessionToken);
+					if (!recordedSuccessfully) {
+						LOGGER.warn("Failed to upload image '{}' for job '{}', with session token '{}', designId '{}' was unused",
+								image.getOriginalFilename(), jobId, sessionToken, designId);
+					}
+				}
+				else {
+					LOGGER.error("Database failed to get an available design id");
+					throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+							"Unable to get new design id to upload draft image...");
+				}
+			}
+			catch (ResponseStatusException e) {
+				throw e;
+			}
+			
+			catch (SQLException e) {
+				LOGGER.error(e.getMessage());
+				if (e.getMessage().contains("Invalid session token") 
+						|| e.getMessage().contains("Expired Session Token") || e.getMessage().contains("design id duplicated")) {
+					String onlyMessage = e.getMessage().split("\\n")[0];
+					throw new ResponseStatusException(HttpStatus.BAD_REQUEST, onlyMessage);
+				}
+				else {
+					throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Database connection failed...");
+				}
+				
+			}
+		}
+		
+		return recordedSuccessfully;
+	}
+	
+	/**
+	 * Uploads a design draft image to the AWS S3 Storage and records it in the database based on the image
+	 * and login of the user.
+	 * 
+	 * @param convoLogin a ConversationLogin object which should contain values for 
+	 * 		jobId (the ID of the job to which to send the message to) and
+	 *      sessionToken (a sessionToken to verify if the artist or the customer are sending the message)
+	 * @param image a MultipartFile representation of the design draft begin sent
+	 * @return {@code true} if the design draft was uploaded successfully<br>
+	 *	       {@code false} if uploading the design draft failed
+	 */
+	public boolean sendDesignDraft(ConversationLogin convoLogin, File image) {
+		boolean recordedSuccessfully = false;
+		
+		int jobId = convoLogin.getJobId();
+		String sessionToken = convoLogin.getSessionToken();
+		if (sessionToken == null) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+					"No session token specified...");
+		}
+		if (jobService.isJobIdValid(jobId)) {
+			int designId = -1;
+			try {
+				designId = TornadoHuntersDao.getInstance().getNextAvailableDesignId();
+				if (designId != -1) {
+					awsService.uploadDesignImage(designId, image);
+					recordedSuccessfully = TornadoHuntersDao.getInstance()
+							.recordDesignDraft(designId, jobId, image.getName(), sessionToken);
+					if (!recordedSuccessfully) {
+						LOGGER.warn("Failed to upload image '{}' for job '{}', with session token '{}', designId '{}' was unused",
+								image.getName(), jobId, sessionToken, designId);
+					}
+				}
+				else {
+					LOGGER.error("Database failed to get an available design id");
+					throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+							"Unable to get new design id to upload draft image...");
+				}
+			}
+			catch (ResponseStatusException e) {
+				throw e;
+			}
+			catch (SQLException e) {
+				LOGGER.error(e.getMessage());
+				throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Database connection failed...");
+			}
+		}
+		
+		return recordedSuccessfully;
+	}
+		
 	
 }
