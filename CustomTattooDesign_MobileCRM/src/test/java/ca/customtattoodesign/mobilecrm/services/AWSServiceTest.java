@@ -65,6 +65,8 @@ public class AWSServiceTest {
 	private static String capTestEncodedJobId;
 	private static String capTestEncodedJobId2;
 
+	private static String capTestBearer;
+
 	@BeforeClass
 	public static void fetchEnvironmentVariables() {
 		capTestId = Integer.parseInt(System.getenv("capTestId"));
@@ -96,6 +98,8 @@ public class AWSServiceTest {
 		capTestImagePath2 = System.getenv("capTestImagePath2");
 		capTestEncodedJobId = System.getenv("capTestEncodedJobId");
 		capTestEncodedJobId2 = System.getenv("capTestEncodedJobId2");
+		
+		capTestBearer = System.getenv("capTestBearer");
 	}
 	
 	@AfterClass

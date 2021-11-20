@@ -1,15 +1,56 @@
 package ca.customtattoodesign.mobilecrm;
 
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.jupiter.api.Test;
+import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit4.SpringRunner;
 
+@RunWith(SpringRunner.class)
 @SpringBootTest
 class CustomTattooDesignMobileCrmApplicationTests {
 	
 	@Test
-	void testAllEnvironmentVariablesExist() throws NumberFormatException{
+	void testRequiredEnvironmentVariablesExist() throws NumberFormatException{		
+		String capDBusername = System.getenv("capDBusername");
+		String capDBpassword = System.getenv("capDBpassword");
+		String capDBhost = System.getenv("capDBhost");
+		String capDBdatabase = System.getenv("capDBdatabase");
+		int capDBport = Integer.parseInt(System.getenv("capDBport"));
+		
+		String capAWSBucketName = System.getenv("capAWSBucketName");
+		String capAWSAccessKey = System.getenv("capAWSAccessKey");
+		String capAWSSecretKey = System.getenv("capAWSSecretKey");
+		String capAWSRegion = System.getenv("capAWSRegion");
+		
+		int capSECIdShift = Integer.parseInt(System.getenv("capSECIdShift"));
+		String capSECKey = System.getenv("capSECKey");
+		String capSECSalt = System.getenv("capSECSalt");
+		String capSECVector = System.getenv("capSECVector");
+		String capSECBearer = System.getenv("capSECBearer");
+		
+		assertTrue("An environment variable is not set up correctly...", 
+				isValidStringEnvironmentVariable(capDBusername) &&
+				isValidStringEnvironmentVariable(capDBpassword) &&
+				isValidStringEnvironmentVariable(capDBhost) &&
+				isValidStringEnvironmentVariable(capDBdatabase) &&
+				
+				isValidStringEnvironmentVariable(capAWSBucketName) &&
+				isValidStringEnvironmentVariable(capAWSAccessKey) &&
+				isValidStringEnvironmentVariable(capAWSSecretKey) &&
+				isValidStringEnvironmentVariable(capAWSRegion) &&
+				
+				isValidStringEnvironmentVariable(capSECKey) &&
+				isValidStringEnvironmentVariable(capSECSalt) &&
+				isValidStringEnvironmentVariable(capSECVector) &&
+				isValidStringEnvironmentVariable(capSECBearer) 
+				);
+	}
+	
+	@Test
+	void testTestEnvironmentVariablesExist() throws NumberFormatException{
 		int capTestId = Integer.parseInt(System.getenv("capTestId"));
 		int capTestId2 = Integer.parseInt(System.getenv("capTestId2"));
 		String capTestUser = System.getenv("capTestUser");
@@ -36,47 +77,59 @@ class CustomTattooDesignMobileCrmApplicationTests {
 		String capTestImagePath2 = System.getenv("capTestImagePath2");
 		String capTestEncodedJobId = System.getenv("capTestEncodedJobId");
 		String capTestEncodedJobId2 = System.getenv("capTestEncodedJobId2");
+		String capTestBearer = System.getenv("capTestBearer");
 		
-		
-		String capDBusername = System.getenv("capDBusername");
-		String capDBpassword = System.getenv("capDBpassword");
-		String capDBhost = System.getenv("capDBhost");
-		String capDBdatabase = System.getenv("capDBdatabase");
-		int capDBport = Integer.parseInt(System.getenv("capDBport"));
-		
-		String capAWSBucketName = System.getenv("capAWSBucketName");
-		String capAWSAccessKey = System.getenv("capAWSAccessKey");
-		String capAWSSecretKey = System.getenv("capAWSSecretKey");
-		String capAWSRegion = System.getenv("capAWSRegion");
-		
-		assertTrue("An environment variable is not set up correctly...", 
-				capDBusername != null && capDBusername.length() > 0 && !capDBusername.equals("null") &&
-				capDBpassword != null && capDBpassword.length() > 0 && !capDBpassword.equals("null") &&
-				capDBhost != null && capDBhost.length() > 0 && !capDBhost.equals("null") &&
-				capDBdatabase != null && capDBdatabase.length() > 0 && !capDBdatabase.equals("null") &&
-				
-				capAWSBucketName != null && capAWSBucketName.length() > 0 && !capAWSBucketName.equals("null") &&
-				capAWSAccessKey != null && capAWSAccessKey.length() > 0 && !capAWSAccessKey.equals("null") &&
-				capAWSSecretKey != null && capAWSSecretKey.length() > 0 && !capAWSSecretKey.equals("null") &&
-				capAWSRegion != null && capAWSRegion.length() > 0 && !capAWSRegion.equals("null") &&
-				
-				capTestUser != null && capTestUser.length() > 0 && !capTestUser.equals("null") &&
-				capTestUser2 != null && capTestUser2.length() > 0 && !capTestUser2.equals("null") &&
-				capTestUserFirstName != null && capTestUserFirstName.length() > 0 && !capTestUserFirstName.equals("null") &&
-				capTestUserLastName != null && capTestUserLastName.length() > 0 && !capTestUserLastName.equals("null") &&
-				capTestUser2FirstName != null && capTestUser2FirstName.length() > 0 && !capTestUser2FirstName.equals("null") &&
-				capTestUser2LastName != null && capTestUser2LastName.length() > 0 && !capTestUser2LastName.equals("null") &&
-				capTestPassword != null && capTestPassword.length() > 0 && !capTestPassword.equals("null") &&
-				capTestPassword2 != null && capTestPassword2.length() > 0 && !capTestPassword2.equals("null") &&
-				capTestSessionToken != null && capTestSessionToken.length() > 0 && !capTestSessionToken.equals("null") &&
-				capTestSessionToken2 != null && capTestSessionToken2.length() > 0 && !capTestSessionToken2.equals("null") &&
-				capTestImageName != null && capTestImageName.length() > 0 && !capTestImageName.equals("null") &&
-				capTestImageName2 != null && capTestImageName2.length() > 0 && !capTestImageName2.equals("null") &&
-				capTestEncodedJobId != null && capTestEncodedJobId.length() > 0 && !capTestEncodedJobId.equals("null") &&
-				capTestEncodedJobId2 != null && capTestEncodedJobId2.length() > 0 && !capTestEncodedJobId2.equals("null") &&
-				capTestImagePath != null && capTestImagePath.length() > 0 && !capTestImagePath.equals("null") &&
-				capTestImagePath2 != null && capTestImagePath2.length() > 0 && !capTestImagePath2.equals("null") 
+		assertTrue("An environment variable is not set up correctly...",  
+				isValidStringEnvironmentVariable(capTestUser) &&
+				isValidStringEnvironmentVariable(capTestUser2) &&
+				isValidStringEnvironmentVariable(capTestUserFirstName) &&
+				isValidStringEnvironmentVariable(capTestUserLastName) &&
+				isValidStringEnvironmentVariable(capTestUser2FirstName) &&
+				isValidStringEnvironmentVariable(capTestUser2LastName) &&
+				isValidStringEnvironmentVariable(capTestPassword) &&
+				isValidStringEnvironmentVariable(capTestPassword2) &&
+				isValidStringEnvironmentVariable(capTestSessionToken) &&
+				isValidStringEnvironmentVariable(capTestSessionToken2) &&
+				isValidStringEnvironmentVariable(capTestImageName) &&
+				isValidStringEnvironmentVariable(capTestImageName2) &&
+				isValidStringEnvironmentVariable(capTestEncodedJobId) &&
+				isValidStringEnvironmentVariable(capTestEncodedJobId2) &&
+				isValidStringEnvironmentVariable(capTestImagePath) &&
+				isValidStringEnvironmentVariable(capTestImagePath2) &&
+				isValidStringEnvironmentVariable(capTestBearer)
 				);
+	}
+	
+	@Test
+	void testIsValidStringEnvironmentVariableRegular() {
+		String envValue = "hello world";
+		assertTrue("String environment variable was valid and was considered invalid ...",
+				this.isValidStringEnvironmentVariable(envValue));
+	}
+	
+	@Test
+	void testIsValidStringEnvironmentVariableBoundaryIn() {
+		String envValue = "h";
+		assertTrue("String environment variable was valid and was considered invalid ...",
+				this.isValidStringEnvironmentVariable(envValue));
+	}
+	
+	@Test
+	void testIsValidStringEnvironmentVariableBoundaryOut() {
+		String envValue = "";
+		assertFalse("String environment variable was invalid and was considered valid ...",
+				this.isValidStringEnvironmentVariable(envValue));
+	}
+	
+	@Test
+	void testIsValidStringEnvironmentVariableException() {
+		String envValue = null;
+		assertFalse("String environment variable was invalid and was considered valid ...",
+				this.isValidStringEnvironmentVariable(envValue));
+	}
+	
+	private boolean isValidStringEnvironmentVariable(String envVariable) {
+		return envVariable != null && envVariable.length() > 0 && !envVariable.equals("null");
 	}
 
 }
