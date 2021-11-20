@@ -378,6 +378,10 @@ public class JobService {
 	public Job fetchCustomerJob(BasicJob bJob) {
 		Job job;
 
+		if (!this.isValidJobAccessToken(bJob.getJobAccessToken())) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Incorrectly formatted jobAccessToken ...");
+		}
+		
 		try{
 			int id = getJobIdFromJobAccessToken(bJob.getJobAccessToken());
 			job = TornadoHuntersDao.getInstance().fetchCustomerJob(id);

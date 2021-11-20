@@ -588,7 +588,7 @@ public class TornadoHuntersDao {
 			ResultSet results = prep.executeQuery();
 
 			if (results.next()) {
-				newJobId = results.getInt("new_job_id");
+				newJobId = results.getInt("submit_design_request");
 			}
 		}
 
@@ -682,6 +682,10 @@ public class TornadoHuntersDao {
 				job.setCommission(results.getDouble("commission"));
 				job.setDescription(results.getString("description"));
 				job.setMessages(TornadoHuntersDao.getInstance().fetchJobMessages(results.getInt("id")));
+				
+				BasicUser tempBasicUser = this.fetchBasicArtistInfo(job.getArtistId());
+				job.setArtistFirstName(tempBasicUser.getFirstName());
+				job.setArtistLastName(tempBasicUser.getLastName());
 			}
 		}
 

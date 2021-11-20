@@ -31,7 +31,7 @@ import ca.customtattoodesign.mobilecrm.dao.TornadoHuntersDao;
 @RunWith(SpringRunner.class)
 @SpringBootTest
 public class ConversationServiceTest {
-
+	
 	@Autowired
 	ConversationService conversationService;
 	
@@ -567,5 +567,5 @@ public class ConversationServiceTest {
 			boolean wasSentSuccessfully = conversationService.sendDesignDraft(conv, multipartFile);
 		});
 	}
-	
+
 }

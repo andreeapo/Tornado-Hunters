@@ -780,4 +780,5 @@ class TornadoHuntersDaoTest {
 		List<DesignImage> designImages = TornadoHuntersDao.getInstance().fetchJobDesigns(jobId);
 		assertFalse("DesignImages were found for an invalid job", designImages.size() > 0);
 	}
+	
 }
