@@ -3,7 +3,10 @@ package ca.customtattoodesign.mobilecrm.services;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
+import org.apache.tomcat.util.http.fileupload.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -17,6 +20,7 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.amazonaws.services.s3.model.PutObjectRequest;
+import com.amazonaws.services.s3.model.PutObjectResult;
 import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectInputStream;
 import com.amazonaws.util.IOUtils;
@@ -77,12 +81,16 @@ public class AWSService {
 	}
 	
 	/**
-	 * Fetches an image from the design id specified as a byte array
+	 * Uploads an image with the design id to the S3 storage
 	 * 
 	 * @param designId Integer id of the design
 	 * @param image MultipartFile image that will be saved to the S3 bucket
+	 * @return {@code true} if the image was uploaded successfully<br>
+	 *	       {@code false} if the image failed to be uploaded
 	 */
-	public void uploadDesignImage(int designId, MultipartFile image) {
+	public boolean uploadDesignImage(int designId, MultipartFile image) {
+		
+		boolean uploadSuccessful = false;
 		
 		if (!this.isValidImage(image)) {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Uploaded image does not meet expected standards ...");
@@ -106,12 +114,55 @@ public class AWSService {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Unable to convert image to uploadable format ...");
 		}
 		if (uploadableImage != null) {
-			s3Client.putObject(new PutObjectRequest(envBucketName, BASE_S3_PATH + designId + "/" + imageName, uploadableImage));
+			PutObjectResult results = s3Client.putObject(new PutObjectRequest(envBucketName,
+					BASE_S3_PATH + designId + "/" + imageName, uploadableImage));
+			if (results != null) {
+				uploadSuccessful = true;
+			}
 			uploadableImage.delete();
 		}
 
 		stopS3Client();
+		
+		return uploadSuccessful;
+	}
+	
+	/**
+	 * Uploads an image with the design id to the S3 storage
+	 * 
+	 * @param designId Integer id of the design
+	 * @param image File image that will be saved to the S3 bucket
+	 * @return {@code true} if the image was uploaded successfully<br>
+	 *	       {@code false} if the image failed to be uploaded
+	 */
+	public boolean uploadDesignImage(int designId, File image) {
+		boolean wasUploadSuccessful = false;
+		try {
+			if (!this.isValidImage(image)) {
+				throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Uploaded image does not meet expected standards ...");
+			}
+		}
+		catch (IOException e) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Unable to load requested image ...");
+		}
 
+		try {
+			startS3Client();
+		}
+		catch (IllegalArgumentException e) {
+			LOGGER.error(e.getMessage());
+			throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "AWS connection failed ...");
+		}
+		
+		String imageName = image.getName();
+		PutObjectResult result = s3Client.putObject(new PutObjectRequest(envBucketName,
+				BASE_S3_PATH + designId + "/" + imageName, image));
+		if (result != null) {
+			wasUploadSuccessful = true;
+		}
+		
+		stopS3Client();
+		return wasUploadSuccessful;
 	}
 	
 	/**
@@ -174,6 +225,33 @@ public class AWSService {
 	}
 	
 	/**
+	 * Checks if the image provided meets the parameters set out by the client.
+	 * 
+	 * @param image a File object of the image
+	 * @return {@code true} if the image is valid<br>
+	 *	       {@code false} if the image is invalid
+	 */
+	public boolean isValidImage(File image) throws IOException{
+		
+		boolean basicCheck = image != null && image.exists() && image.isFile();
+		if (basicCheck) {
+			boolean fileExtensionValid = false;
+			
+			for (String fileExtension : ALLOWED_IMAGE_EXTENSIONS) {
+				fileExtensionValid |= image.getName().endsWith(fileExtension);
+			}
+			if (fileExtensionValid) {
+				byte[] imageBytes = Files.readAllBytes(Paths.get(image.getPath()));
+				if (imageBytes.length <= MAX_IMAGE_SIZE_BYTES) {
+					return isValidImageName(image.getName());
+				}
+			}
+		}
+		
+		return false; 
+	}
+	
+	/**
 	 * Checks if the imageName provided is the name of a valid Image.
 	 * 
 	 * @param image a MultipartFile file version of the image
@@ -182,8 +260,8 @@ public class AWSService {
 	 */
 	public boolean isValidImageName(String imageName) {
 		
-		// 1 character for the name of the file and 1 character for the extension delimiter
-		int minimumSize = 2;
+		// 1 character for the name of the file
+		int minimumSize = 1;
 		
 		int minimumExtensionSize = 0;
 		for (String fileExtension : ALLOWED_IMAGE_EXTENSIONS) {

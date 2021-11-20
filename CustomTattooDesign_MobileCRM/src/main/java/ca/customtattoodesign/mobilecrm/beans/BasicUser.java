@@ -1,24 +1,21 @@
 package ca.customtattoodesign.mobilecrm.beans;
 
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
 /**
- * The {@code Design} class is used to hold information about designs for jobs.
+ * The {@code BasicUser} class is used to hold the basics of a user (artist).
  * 
  * @author Roman Krutikov
  */
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-@Builder
-public class Design {
-
+@SuperBuilder
+public class BasicUser {
 	private int id;
-	private String imageFileName;
-	private int jobId;
-	private int artistId;
-	
+	private String firstName;
+	private String lastName;
 }

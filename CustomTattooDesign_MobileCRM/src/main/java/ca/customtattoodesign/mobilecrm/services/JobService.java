@@ -26,6 +26,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import ca.customtattoodesign.mobilecrm.beans.BasicJob;
 import ca.customtattoodesign.mobilecrm.beans.ClaimJobLogin;
+import ca.customtattoodesign.mobilecrm.beans.DesignImage;
 import ca.customtattoodesign.mobilecrm.beans.DesignRequest;
 import ca.customtattoodesign.mobilecrm.beans.Job;
 import ca.customtattoodesign.mobilecrm.beans.SessionLogin;
@@ -374,9 +375,13 @@ public class JobService {
 	 * 		to access their jobs
 	 * @return {@code job} a Job object that matches the BasicJob object
 	 */
-    public Job fetchCustomerJob(BasicJob bJob) {
+	public Job fetchCustomerJob(BasicJob bJob) {
 		Job job;
 
+		if (!this.isValidJobAccessToken(bJob.getJobAccessToken())) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Incorrectly formatted jobAccessToken ...");
+		}
+		
 		try{
 			int id = getJobIdFromJobAccessToken(bJob.getJobAccessToken());
 			job = TornadoHuntersDao.getInstance().fetchCustomerJob(id);
@@ -390,12 +395,59 @@ public class JobService {
 			throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "SQL Database connection failed...");
 		}
 		catch (Exception e) {
-				LOGGER.error(e.getMessage());
-				throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage()+"\n"+e.getClass());
+			LOGGER.error(e.getMessage());
+			throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage()+"\n"+e.getClass());
 		}
 
 		return job;
 
     }
+	
+	/**
+	 * Gets a list of all the design images associated with a job
+	 *
+	 * @param basicJob BasicJob which holds the job access token and/or a job id
+	 * @return List&lt;DesignImage&gt; a list of the design images of a job
+	 */
+	public List<DesignImage> getDesigns(BasicJob basicJob){
+		List<DesignImage> designImages = new ArrayList<DesignImage>();
+		
+		int jobId = -1;
+		
+		if (!this.isJobIdValid(basicJob.getJobId())) {
+			String jobAccessToken = basicJob.getJobAccessToken();
+			if (this.isValidJobAccessToken(jobAccessToken)) {
+				try {
+					jobId = this.getJobIdFromJobAccessToken(basicJob.getJobAccessToken());
+				}
+				catch (Exception e) {
+					LOGGER.error(e.getMessage()+"\n"+e.getClass());
+					throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
+				}
+			}
+			else {
+				throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Job access token was not formatted correctly");
+			}
+		}
+		else {
+			jobId = basicJob.getJobId();
+		}
+		
+		try {
+			designImages = TornadoHuntersDao.getInstance().fetchJobDesigns(jobId);
+		}
+		catch (SQLException e){
+			LOGGER.error(e.getMessage());
+			throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "SQL Database connection failed...");
+		}
+		
+		for (DesignImage designImage : designImages) {
+			designImage.setImageByteRepresentation(
+					awsService.downloadDesignImage(designImage.getDesignId(), designImage.getImageName())
+					);
+		}
+
+		return designImages;
+	}
 
 }

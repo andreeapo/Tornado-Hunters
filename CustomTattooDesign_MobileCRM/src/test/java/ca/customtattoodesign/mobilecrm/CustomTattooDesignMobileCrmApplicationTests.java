@@ -14,6 +14,10 @@ class CustomTattooDesignMobileCrmApplicationTests {
 		int capTestId2 = Integer.parseInt(System.getenv("capTestId2"));
 		String capTestUser = System.getenv("capTestUser");
 		String capTestUser2 = System.getenv("capTestUser2");
+		String capTestUserFirstName = System.getenv("capTestUserFirstName");
+		String capTestUserLastName = System.getenv("capTestUserLastName");
+		String capTestUser2FirstName = System.getenv("capTestUser2FirstName");
+		String capTestUser2LastName = System.getenv("capTestUser2LastName");
 		String capTestPassword = System.getenv("capTestPassword");
 		String capTestPassword2 = System.getenv("capTestPassword2");
 		String capTestSessionToken = System.getenv("capTestSessionToken");
@@ -28,8 +32,11 @@ class CustomTattooDesignMobileCrmApplicationTests {
 		int capTestDesignId2 = Integer.parseInt(System.getenv("capTestDesignId2"));
 		String capTestImageName = System.getenv("capTestImageName");
 		String capTestImageName2 = System.getenv("capTestImageName2");
-		String capTestEncodedJobId = System.getenv("capTestEncodedJobId");;
-		String capTestEncodedJobId2 = System.getenv("capTestEncodedJobId2");;
+		String capTestImagePath = System.getenv("capTestImagePath");
+		String capTestImagePath2 = System.getenv("capTestImagePath2");
+		String capTestEncodedJobId = System.getenv("capTestEncodedJobId");
+		String capTestEncodedJobId2 = System.getenv("capTestEncodedJobId2");
+		
 		
 		String capDBusername = System.getenv("capDBusername");
 		String capDBpassword = System.getenv("capDBpassword");
@@ -55,6 +62,10 @@ class CustomTattooDesignMobileCrmApplicationTests {
 				
 				capTestUser != null && capTestUser.length() > 0 && !capTestUser.equals("null") &&
 				capTestUser2 != null && capTestUser2.length() > 0 && !capTestUser2.equals("null") &&
+				capTestUserFirstName != null && capTestUserFirstName.length() > 0 && !capTestUserFirstName.equals("null") &&
+				capTestUserLastName != null && capTestUserLastName.length() > 0 && !capTestUserLastName.equals("null") &&
+				capTestUser2FirstName != null && capTestUser2FirstName.length() > 0 && !capTestUser2FirstName.equals("null") &&
+				capTestUser2LastName != null && capTestUser2LastName.length() > 0 && !capTestUser2LastName.equals("null") &&
 				capTestPassword != null && capTestPassword.length() > 0 && !capTestPassword.equals("null") &&
 				capTestPassword2 != null && capTestPassword2.length() > 0 && !capTestPassword2.equals("null") &&
 				capTestSessionToken != null && capTestSessionToken.length() > 0 && !capTestSessionToken.equals("null") &&
@@ -62,7 +73,9 @@ class CustomTattooDesignMobileCrmApplicationTests {
 				capTestImageName != null && capTestImageName.length() > 0 && !capTestImageName.equals("null") &&
 				capTestImageName2 != null && capTestImageName2.length() > 0 && !capTestImageName2.equals("null") &&
 				capTestEncodedJobId != null && capTestEncodedJobId.length() > 0 && !capTestEncodedJobId.equals("null") &&
-				capTestEncodedJobId2 != null && capTestEncodedJobId2.length() > 0 && !capTestEncodedJobId2.equals("null")
+				capTestEncodedJobId2 != null && capTestEncodedJobId2.length() > 0 && !capTestEncodedJobId2.equals("null") &&
+				capTestImagePath != null && capTestImagePath.length() > 0 && !capTestImagePath.equals("null") &&
+				capTestImagePath2 != null && capTestImagePath2.length() > 0 && !capTestImagePath2.equals("null") 
 				);
 	}
 

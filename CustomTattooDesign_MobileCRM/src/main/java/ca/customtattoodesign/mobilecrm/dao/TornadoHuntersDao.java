@@ -11,6 +11,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import org.postgresql.util.PSQLException;
+
+import ca.customtattoodesign.mobilecrm.beans.BasicUser;
+import ca.customtattoodesign.mobilecrm.beans.DesignImage;
 import ca.customtattoodesign.mobilecrm.beans.DesignRequest;
 import ca.customtattoodesign.mobilecrm.beans.Job;
 import ca.customtattoodesign.mobilecrm.beans.Message;
@@ -330,6 +334,7 @@ public class TornadoHuntersDao {
 				tempJob.setCommission(results.getDouble("commission"));
 				tempJob.setDescription(results.getString("description"));
 				tempJob.setMessages(TornadoHuntersDao.getInstance().fetchJobMessages(results.getInt("id")));
+				
 				jobs.add(tempJob);
 
 			}
@@ -371,6 +376,11 @@ public class TornadoHuntersDao {
 				tempJob.setCommission(results.getDouble("commission"));
 				tempJob.setDescription(results.getString("description"));
 				tempJob.setMessages(TornadoHuntersDao.getInstance().fetchJobMessages(results.getInt("id")));
+				
+				BasicUser tempBasicUser = this.fetchBasicArtistInfo(tempJob.getArtistId());
+				tempJob.setArtistFirstName(tempBasicUser.getFirstName());
+				tempJob.setArtistLastName(tempBasicUser.getLastName());
+				
 				jobs.add(tempJob);
 
 			}
@@ -559,8 +569,6 @@ public class TornadoHuntersDao {
 	public int submitDesignRequest(DesignRequest designRequest) throws SQLException {
 		int newJobId = -1;
 
-
-
 		String sql = "SELECT submit_design_request(?,?,?,?,?,?,?,?,?,?,?)";
 
 		try (Connection conn = TornadoHuntersDao.getConnection(); PreparedStatement prep = conn.prepareStatement(sql)) {
@@ -580,7 +588,7 @@ public class TornadoHuntersDao {
 			ResultSet results = prep.executeQuery();
 
 			if (results.next()) {
-				newJobId = results.getInt("new_job_id");
+				newJobId = results.getInt("submit_design_request");
 			}
 		}
 
@@ -674,9 +682,117 @@ public class TornadoHuntersDao {
 				job.setCommission(results.getDouble("commission"));
 				job.setDescription(results.getString("description"));
 				job.setMessages(TornadoHuntersDao.getInstance().fetchJobMessages(results.getInt("id")));
+				
+				BasicUser tempBasicUser = this.fetchBasicArtistInfo(job.getArtistId());
+				job.setArtistFirstName(tempBasicUser.getFirstName());
+				job.setArtistLastName(tempBasicUser.getLastName());
 			}
 		}
 
 		return job;
 	}
+	
+	/**
+	 * Returns a basicUser object based on an artistId (first name and last name)
+	 *
+	 * @param artistId the id of the artist
+	 * @return {@code job} with the same access token
+	 * @throws SQLException if the connection to the database failed, or if the SQL command(s) within the method failed
+	 */
+	public BasicUser fetchBasicArtistInfo(int artistId) throws SQLException{
+		BasicUser basicUser = null;
+		
+		String sql = "SELECT first_name, last_name FROM user_profiles WHERE user_id = ?";
+
+		try(Connection conn = TornadoHuntersDao.getConnection();
+				PreparedStatement prep = conn.prepareStatement(sql)) {
+			
+			prep.setInt(1, artistId);
+			ResultSet results = prep.executeQuery();
+
+			if(results.next()){
+				basicUser = new BasicUser();
+				
+				basicUser.setId(artistId);
+				basicUser.setFirstName(results.getString("first_name"));
+				basicUser.setLastName(results.getString("last_name"));
+			}
+			
+		}
+		
+		return basicUser;
+	}
+	
+	/**
+	 * Records info of a design request image that was sent to the AWS S3 storage.
+	 *
+	 * @param designId  the ID of the image/design that is being recorded
+	 * @param jobId     the ID of the job to which the image belongs to
+	 * @param imageName the file name of the image being recorded
+	 * @param sessionToken the session token of the user uploading the image
+	 * @return {@code true} if the image was recorded successfully<br>
+	 *         {@code false} if the image recording failed
+	 * @throws SQLException if the connection to the database failed, or if the SQL
+	 *                      command(s) within the method failed
+	 */
+	public boolean recordDesignDraft(int designId, int jobId, String imageName, String sessionToken) throws SQLException{
+		boolean wasRecordedSuccessfully = false;
+		
+		String sql = "SELECT record_design_draft(?,?,?,?)";
+		
+		try (Connection conn = TornadoHuntersDao.getConnection(); PreparedStatement prep = conn.prepareStatement(sql)) {
+
+			prep.setInt(1, designId);
+			prep.setInt(2, jobId);
+			prep.setString(3, imageName);
+			prep.setString(4, sessionToken);
+			
+			try {
+				ResultSet results = prep.executeQuery();
+
+				if (results.next()) {
+					wasRecordedSuccessfully = results.getBoolean("record_design_draft");
+				}
+			}
+			catch (PSQLException e) {
+				throw new SQLException(e.getMessage());
+			}
+
+		}
+		
+		return wasRecordedSuccessfully;
+	}
+	
+	/**
+	 * Fetches all the designs associated with a job.
+	 * 
+	 * @param jobId the ID of the job for which we want designs of
+	 * @return List&lt;DesignImage&gt; a list of the design images for a job
+	 * @throws SQLException if the connection to the database failed, or if the SQL
+	 *                      command(s) within the method failed
+	 */
+	public List<DesignImage> fetchJobDesigns(int jobId) throws SQLException{
+		ArrayList<DesignImage> jobImages = new ArrayList<DesignImage>();
+		
+		String sql = "SELECT id, image, created_at FROM designs WHERE job_id = ?";
+		
+		try (Connection conn = TornadoHuntersDao.getConnection(); PreparedStatement prep = conn.prepareStatement(sql)) {
+			prep.setInt(1, jobId);
+			
+			ResultSet results = prep.executeQuery();
+			
+			while (results.next()) {
+				DesignImage tempDesignImage = new DesignImage();
+				
+				tempDesignImage.setDesignId(results.getInt("id"));
+				tempDesignImage.setImageName(results.getString("image"));
+				tempDesignImage.setSubmissionDate(results.getTimestamp("created_at"));
+				jobImages.add(tempDesignImage);
+			}
+		}
+		
+		return jobImages;
+	}
+	
+	
 }

@@ -4,6 +4,8 @@ import java.io.UnsupportedEncodingException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.sql.Date;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -32,11 +34,13 @@ import ca.customtattoodesign.mobilecrm.beans.UserLogin;
 import ca.customtattoodesign.mobilecrm.beans.BasicJob;
 import ca.customtattoodesign.mobilecrm.beans.ClaimJobLogin;
 import ca.customtattoodesign.mobilecrm.beans.ConversationLogin;
+import ca.customtattoodesign.mobilecrm.beans.DesignImage;
 import ca.customtattoodesign.mobilecrm.beans.DesignRequest;
 import ca.customtattoodesign.mobilecrm.beans.Job;
 import ca.customtattoodesign.mobilecrm.beans.Message;
 import ca.customtattoodesign.mobilecrm.beans.SessionLogin;
 import ca.customtattoodesign.mobilecrm.beans.SessionUser;
+import ca.customtattoodesign.mobilecrm.services.AWSService;
 import ca.customtattoodesign.mobilecrm.services.ConversationService;
 import ca.customtattoodesign.mobilecrm.services.JobService;
 import ca.customtattoodesign.mobilecrm.services.LoginService;
@@ -266,6 +270,40 @@ public class RestController {
 		return jobService.sendJobDesignRequest(designSubmission, images);
 	}
 	
+	/**
+	 * Gets a list of all the design images associated with a job
+	 *
+	 * @param basicJob BasicJob which holds the job access token and/or a job id
+	 * @return {@code List<DesignImage>} a list of the design images of a job
+	 */
+	@PostMapping("/getDesigns")
+	public List<DesignImage> getDesignImages(HttpServletRequest request, @RequestBody @NonNull BasicJob basicJob){
+		
+		LOGGER.info("Caller Address: '{}', Api Call Made: '{}'", request.getRemoteHost(), request.getServletPath());
+		
+		return jobService.getDesigns(basicJob);
+		
+	}
+	
+	/**
+	 * Uploads a design draft image to the AWS S3 Storage and records it in the database based on the image
+	 * and login of the user.
+	 * 
+	 * @param convoLogin a ConversationLogin object which should contain values for 
+	 * 		jobId (the ID of the job to which to send the message to) and
+	 *      sessionToken (a sessionToken to verify if the artist or the customer are sending the message)
+	 * @param image a MultipartFile representation of the design draft begin sent
+	 * @return {@code true} if the design draft was uploaded successfully<br>
+	 *	       {@code false} if uploading the design draft failed
+	 */
+	@PostMapping("/sendDesignDraft")
+	public boolean sendDesignDraft(HttpServletRequest request, @ModelAttribute ConversationLogin convoLogin, 
+			@RequestParam("image")MultipartFile image) {
+		
+		LOGGER.info("Caller Address: '{}', Api Call Made: '{}'", request.getRemoteHost(), request.getServletPath());
+		
+		return conversationService.sendDesignDraft(convoLogin, image);
+	}
 	
 	// Test method to be removed...
 	@PostMapping("/encodeJobId")
@@ -285,6 +323,28 @@ public class RestController {
 			@ModelAttribute BasicJob bJob) {
 		LOGGER.info("Image Exists? "+ image1.isPresent());
 		return bJob;
+	}
+	
+	@Autowired AWSService awsService;
+	
+	//Test method to be removed...
+	@PostMapping("/testDownloadDesignImages")
+	public List<DesignImage> testDownloadDesignImages(HttpServletRequest request){
+		List<DesignImage> returnList = new ArrayList<DesignImage>();
+		int designId = 1;
+		String imageName = "unitTests.png";
+		
+		returnList.add(
+				DesignImage.builder()
+				.designId(designId)
+				.imageName(imageName)
+				.imageByteRepresentation(awsService.downloadDesignImage(designId, imageName))
+				.submissionDate(Date.valueOf(LocalDate.now()))
+				.build()
+		);
+		
+		return returnList;
+			
 	}
 	
 	
