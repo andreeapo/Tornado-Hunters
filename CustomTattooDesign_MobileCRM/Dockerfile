@@ -1,7 +1,7 @@
 FROM openjdk:15-jdk-alpine
 LABEL maintainer krutikov@sheridancollege.ca
-COPY target/CustomTattooDesign_MobileCRM-0.0.1-SNAPSHOT.jar ctdhelloworld.jar
-ENTRYPOINT ["java","-jar","ctdhelloworld.jar"]
+COPY target/CustomTattooDesign_MobileCRM-1.0.0.jar CustomTattooDesign_MobileCRM-1.0.0.jar
+ENTRYPOINT ["java","-jar","CustomTattooDesign_MobileCRM-1.0.0.jar"]
 EXPOSE 4004
 ENV capDBusername=setWhenCompiling    \
     capDBpassword=setWhenCompiling    \

@@ -366,15 +366,61 @@ public class RestController {
 		return conversationService.sendDesignDraft(convoLogin, image);
 	}
 	
+	/**
+	 * A simple method that runs "Pong!", this method can be used for testing if the API is online.
+	 * 
+	 * @return {@code Pong!}
+	 */
+	@GetMapping("/ping")
+	public String ping(HttpServletRequest request) {
+
+		LOGGER.info("Caller Address: '{}', Api Call Made: '{}'", request.getRemoteHost(), request.getServletPath());
+		
+		return "Pong!";
+	}
+	
+	/**
+	 * Checks whether the provided bearer token matches the one required to authorize an API call.
+	 * 
+	 * @return {@code true} if the bearer token authorizes the API call<br>
+	 *	       {@code false} if the bearer token does not authorizes the API call
+	 */
+	protected boolean isBearerTokenValid(String bearerToken) {
+		String expectedBearerToken = System.getenv("capSECBearer");
+		if (bearerToken != null) {
+			return expectedBearerToken.equals(bearerToken);
+		}
+		return false;
+	}
+	
+	
+	
+	
 	// TODO Test method to be removed...
 	@PostMapping("/encodeJobId")
-	public String getEncodedJobId(@RequestParam("decodedJobId") int jobId) throws NoSuchMethodException, InvalidKeyException, IllegalArgumentException, UnsupportedEncodingException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidAlgorithmParameterException, IllegalBlockSizeException, BadPaddingException {
+	public String getEncodedJobId(HttpServletRequest request, @RequestParam("decodedJobId") int jobId) throws NoSuchMethodException, InvalidKeyException, IllegalArgumentException, UnsupportedEncodingException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidAlgorithmParameterException, IllegalBlockSizeException, BadPaddingException {
+		
+		boolean isApiCallerAuthorized = this.isBearerTokenValid(request.getHeader("BEARER"));
+		LOGGER.info("Caller Address: '{}', Api Call Made: '{}', Authorizated: '{}'", 
+				request.getRemoteHost(), request.getServletPath(), isApiCallerAuthorized);
+		if (!isApiCallerAuthorized) {
+			throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Api caller is not authorized for this request");
+		}
+		
 		return jobService.getJobAccessTokenFromJobId(jobId);
 	}
 	
 	// TODO Test method to be removed...
 	@PostMapping("/decodeJobId")
-	public int getEncodedJobId(@RequestParam("encodedJobId") String encodedJobId) throws NoSuchMethodException, InvalidKeyException, IllegalArgumentException, UnsupportedEncodingException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidAlgorithmParameterException, IllegalBlockSizeException, BadPaddingException {
+	public int getEncodedJobId(HttpServletRequest request, @RequestParam("encodedJobId") String encodedJobId) throws NoSuchMethodException, InvalidKeyException, IllegalArgumentException, UnsupportedEncodingException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidAlgorithmParameterException, IllegalBlockSizeException, BadPaddingException {
+		
+		boolean isApiCallerAuthorized = this.isBearerTokenValid(request.getHeader("BEARER"));
+		LOGGER.info("Caller Address: '{}', Api Call Made: '{}', Authorizated: '{}'", 
+				request.getRemoteHost(), request.getServletPath(), isApiCallerAuthorized);
+		if (!isApiCallerAuthorized) {
+			throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Api caller is not authorized for this request");
+		}
+		
 		return jobService.getJobIdFromJobAccessToken(encodedJobId);
 	}
 	
@@ -382,6 +428,14 @@ public class RestController {
 	@PostMapping("/testModelAttribute")
 	public BasicJob testModelAttribute(HttpServletRequest request, @RequestParam("image1") Optional<MultipartFile> image1,
 			@ModelAttribute BasicJob bJob) {
+		
+		boolean isApiCallerAuthorized = this.isBearerTokenValid(request.getHeader("BEARER"));
+		LOGGER.info("Caller Address: '{}', Api Call Made: '{}', Authorizated: '{}'", 
+				request.getRemoteHost(), request.getServletPath(), isApiCallerAuthorized);
+		if (!isApiCallerAuthorized) {
+			throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Api caller is not authorized for this request");
+		}
+		
 		LOGGER.info("Image Exists? "+ image1.isPresent());
 		return bJob;
 	}
@@ -392,6 +446,14 @@ public class RestController {
 	// TODO Test method to be removed...
 	@PostMapping("/testDownloadDesignImages")
 	public List<DesignImage> testDownloadDesignImages(HttpServletRequest request){
+		
+		boolean isApiCallerAuthorized = this.isBearerTokenValid(request.getHeader("BEARER"));
+		LOGGER.info("Caller Address: '{}', Api Call Made: '{}', Authorizated: '{}'", 
+				request.getRemoteHost(), request.getServletPath(), isApiCallerAuthorized);
+		if (!isApiCallerAuthorized) {
+			throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Api caller is not authorized for this request");
+		}
+		
 		List<DesignImage> returnList = new ArrayList<DesignImage>();
 		int designId = 1;
 		String imageName = "unitTests.png";
@@ -410,25 +472,7 @@ public class RestController {
 	}
 	
 	
-	/**
-	 * A simple method that runs "Pong!", this method can be used for testing if the API is online.
-	 * 
-	 * @return {@code Pong!}
-	 */
-	@GetMapping("/ping")
-	public String ping(HttpServletRequest request) {
 
-		LOGGER.info("Caller Address: '{}', Api Call Made: '{}'", request.getRemoteHost(), request.getServletPath());
-		
-		return "Pong!";
-	}
 	
-	protected boolean isBearerTokenValid(String bearerToken) {
-		String expectedBearerToken = System.getenv("capSECBearer");
-		if (bearerToken != null) {
-			return expectedBearerToken.equals(bearerToken);
-		}
-		return false;
-	}
 	
 }
