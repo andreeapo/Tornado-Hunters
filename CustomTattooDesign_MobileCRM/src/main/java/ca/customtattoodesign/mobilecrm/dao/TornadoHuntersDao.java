@@ -378,9 +378,11 @@ public class TornadoHuntersDao {
 				tempJob.setMessages(TornadoHuntersDao.getInstance().fetchJobMessages(results.getInt("id")));
 				
 				BasicUser tempBasicUser = this.fetchBasicArtistInfo(tempJob.getArtistId());
-				tempJob.setArtistFirstName(tempBasicUser.getFirstName());
-				tempJob.setArtistLastName(tempBasicUser.getLastName());
-				
+				if (tempBasicUser != null) {
+					tempJob.setArtistFirstName(tempBasicUser.getFirstName());
+					tempJob.setArtistLastName(tempBasicUser.getLastName());
+				}
+
 				jobs.add(tempJob);
 
 			}
@@ -684,8 +686,11 @@ public class TornadoHuntersDao {
 				job.setMessages(TornadoHuntersDao.getInstance().fetchJobMessages(results.getInt("id")));
 				
 				BasicUser tempBasicUser = this.fetchBasicArtistInfo(job.getArtistId());
-				job.setArtistFirstName(tempBasicUser.getFirstName());
-				job.setArtistLastName(tempBasicUser.getLastName());
+				if (tempBasicUser != null) {
+					job.setArtistFirstName(tempBasicUser.getFirstName());
+					job.setArtistLastName(tempBasicUser.getLastName());
+				}
+
 			}
 		}
 
