@@ -10,9 +10,9 @@
 	</parent>
 	<groupId>ca.customtattoodesign.mobilecrm</groupId>
 	<artifactId>CustomTattooDesign_MobileCRM</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>1.0.0</version>
 	<name>CustomTattooDesign_MobileCRM</name>
-	<description>Demo project for Spring Boot</description>
+	<description>Rest API for Custom Tattoo Design Mobile CRM</description>
 	<properties>
 		<java.version>15</java.version>
 	</properties>
